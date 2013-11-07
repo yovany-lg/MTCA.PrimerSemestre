@@ -22,4 +22,11 @@
             cuantos
             (recur (rest li)
                 (inc cuantos)))))
+
 ;Tarea: implementar el ultimo
+(defn ultimo
+    "Para el caso general"
+    ([li]
+        (if (> (count li) 1)
+            (recur (rest li))
+            (nth li 0))))
