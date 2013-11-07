@@ -30,3 +30,27 @@
         (if (> (count li) 1)
             (recur (rest li))
             (nth li 0))))
+
+;Nueva implementacion
+(defn ultimo_2
+    ;No se puede implementar al igual que Haskell, 
+    ;en donde se puede procesar una lista de un solo elemento
+    ;aqui se deben hacer comparaciones... 
+    [li]
+    (if (empty? (rest li))
+        (first li)
+        (recur (rest li))))
+
+;Secuencias
+(list 1 2 3 4 5)
+(cons 8 (list 1 2 3 4 5))
+
+;Realizar la sig. fn.:
+;(rango 10) = '(0 1 2 3 4 5 6 7 8 9 10)
+(defn rango
+    ;No se puede implementar al igual que Haskell, 
+    ;en donde se puede procesar una lista de un solo elemento
+    ;aqui se deben hacer comparaciones... 
+    ([n]
+        )
+    )
