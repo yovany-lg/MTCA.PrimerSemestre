@@ -1,11 +1,44 @@
-#Asignacion de elementos en secuencias o tuplas
-p=(4,5)
-    #Separación en varios elementos
-x,y = p
-print("El valor de X: "+x", el valor de y: "+y)
+#-Sintaxis basica
 
-    #Secuencia Mixta
-data = ['Sublime',50,91.1,(2013,11,05)]
-    #División de todos sus elementos
-name, addres, price, date = data
-print("Nombre: "+name+" Fecha: "+date)
+#--Modos de asignacion
+
+#---Asignacion basica
+nombre = "Yovany"
+#>>> nombre
+#'Yovany'
+
+#---Asignacion por posicion:
+#----Se asignan valores en base a la posicion en la tupla
+nombre, apellido = "Yovany", "Luis"
+#>>> nombre
+#'Yovany'
+#>>> apellido
+#'Luis'
+
+#---Asignacion a traves de una lista:
+#----Se asignan valores en base a la posicion en la lista
+[nombre, apellido] = ['Yovany', 'Luis']
+#>>> nombre, apellido
+#('Yovany', 'Luis')
+
+#---Asignacion en secuencia de manera generalizada:
+#----Se asignan valores a las variables de manera general,
+#----se distribuyen los acacteres de la cadena
+a, b, c, d, e, f = 'Yovany'
+#>>> a,b
+#('Y', 'o')
+
+#*Cuando el numero de variables es menor al de los elementos
+#de la derecha se genera un error
+#>>> a, b, c, d, e = 'Yovany'
+#Traceback (most recent call last):
+#  File "<stdin>", line 1, in <module>
+#  File "<string>", line 1, in <module>
+#ValueError: too many values to unpack (expected 5)
+
+#---Asignacion con emparejamiento:
+#----Se asignan valores por parejas
+((a, b, c), (d, e, f)) = ('Yov','any')
+#>>> a,b,c
+#('Y', 'o', 'v')
+

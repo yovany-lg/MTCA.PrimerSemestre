@@ -1,0 +1,25 @@
+Hola chicos, les adjuntos la lista de cosas que les toca hacer para el 8 de
+noviembre (puede haber más):
+
+- Sobre su lenguaje, traer ejemplos y una explicación en código de las
+siguientes características:
+-- Sintaxis básica
+-- Tipos de datos (todos)
+-- Estructuras de control (todas)
+-- Manejo de procedimientos/funciones.
+-- Manejo de  la orientación a objetos.
+--- Manejo de la herencia, polimorfismo
+--- Manejo de atributos y métodos
+--- Manejo de clases estáticas y métodos estáticos
+- Hacer un resumen crítico del video “Value of Values”
+(http://www.infoq.com/presentations/Value-Values)
+- Hacer un resumen crítico de 1 artículo científico de mínimo 8 páginas sobre
+la programación funcional, enfocándose a sus ventajas sobre la programación
+orientada a objetos. Puede ser sobre otros temas.
+
+Que tengan buen fin de semana :-)
+
+--
+Dr. José Figueroa Martínez
+Universidad Tecnológica de la Mixteca
+Instituto de Computación, Despacho 8
