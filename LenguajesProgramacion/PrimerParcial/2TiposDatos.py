@@ -181,3 +181,78 @@ Dict = {'nombre': {'primer': 'Wilfrido', 'apellido': 'López'},
 #{'primer': 'Wilfrido', 'apellido': 'López'}
 #>>> Dict['trabajos']
 #['albañil', 'chalan']
+
+#-Tuplas
+
+T = (1, 2, 3, 4)    #Declaración de una Tupla
+#>>> T
+#(1, 2, 3, 4)
+len(T)  #Longitud
+#>>> len(T)
+#4
+T[0]    #Elemento por posición
+#>>> T[0]
+#1
+T.index(2)  #Posición del elemento en la tupla
+#>>> T.index(2)
+#1
+T.count(2)  #Apariciones del elemento en la tupla
+#>>> T.count(2)
+#1
+T = 'Hola', 3.0, [11, 22, 33]   #Declaración de Tupla con diferentes tipos de elementos
+#>>> T
+#('Hola', 3.0, [11, 22, 33])
+
+
+#-Archivos
+
+#---Abrir un archivo de texto en modo escritura
+f = open('C:\\Users\Yovany\\Documents\\GitHub\\MTCA.PrimerSemestre'+
+    '\\LenguajesProgramacion\\PrimerParcial\\data.txt', 'w')
+#---Escribir texto en el archivo
+f.write('Hola\n')   #Retorna el número de caracteres escritos
+f.write('Mundo\n')
+#---Cerrar el archivo
+f.close()
+
+#---Abrir el archivo de texto para lectura
+f = open('C:\\Users\Yovany\\Documents\\GitHub\\MTCA.PrimerSemestre'+
+    '\\LenguajesProgramacion\\PrimerParcial\\data.txt')
+#---Leer el contenido del archivo
+text = f.read()
+#---Imprimir el contenido
+print(text)
+
+#>>> f = open('C:\\Users\Yovany\\Documents\\GitHub\\MTCA.PrimerSemestre'+
+#    '\\LenguajesProgramacion\\PrimerParcial\\data.txt', 'w')
+#... >>> f.write('Hola\n')
+#5
+#>>> f.write('Mundo\n')
+#6
+#>>> f.close()
+#>>> f = open('C:\\Users\Yovany\\Documents\\GitHub\\MTCA.PrimerSemestre'+
+#    '\\LenguajesProgramacion\\PrimerParcial\\data.txt')
+#
+#... >>> >>> text = f.read()
+#>>> text
+#'Hola\nMundo\n'
+#>>> print(text)
+#Hola
+#Mundo
+
+#-Conjuntos, Set
+#--Son colecciones desordenadas de objetos únicos e inmutables.
+
+#---Formas de declarar un conjunto
+X = set('hola')
+Y = {'m','u','n','d','o'}
+
+#--Operaciones de Conjuntos
+#---Intersección
+X&Y
+#>>> X&Y
+#{'o'}
+#---Unión
+X|Y
+#>>> X|Y
+#{'u', 'h', 'o', 'n', 'm', 'l', 'a', 'd'}
