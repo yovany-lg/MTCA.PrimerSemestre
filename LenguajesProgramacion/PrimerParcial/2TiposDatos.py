@@ -248,11 +248,19 @@ X = set('hola')
 Y = {'m','u','n','d','o'}
 
 #--Operaciones de Conjuntos
+
 #---Intersección
 X&Y
 #>>> X&Y
 #{'o'}
+
 #---Unión
 X|Y
 #>>> X|Y
 #{'u', 'h', 'o', 'n', 'm', 'l', 'a', 'd'}
+
+#---Diferencia
+X-Y
+#>>> X-Y
+#{'a', 'h', 'l'}
+

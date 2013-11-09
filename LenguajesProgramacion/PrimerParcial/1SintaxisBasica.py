@@ -1,5 +1,14 @@
 #-Sintaxis basica
 
+#Impresión de múltiples objetos
+x = 'Yovany'
+y = 'and'
+z = []
+z += 'Gaby'
+print(x,y,z,sep='_')    #Impresión de múltiples objetos
+#>>> print(x,y,z,sep='_')
+#Yovany_and_['G', 'a', 'b', 'y']
+
 #--Modos de asignacion
 
 #---Asignacion basica
