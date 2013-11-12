@@ -54,4 +54,29 @@
     ([niveles]
         (full_triangle niveles "*"))
     ([niveles car]
-        ))
+        (full_triangle niveles ;Niveles
+            car ;Caracter de relleno
+            (list (list (full_triangle_spaces niveles niveles)
+                (full_triangle_chars niveles)))  ;Lista que contiene a la lista del primer nivel
+            (dec niveles)))
+    ([niveles car li nivelActual]
+        (if (> nivelActual 0)
+            (recur niveles 
+                car 
+                (cons (list (full_triangle_spaces niveles nivelActual) 
+                        (full_triangle_chars nivelActual))
+                    li)
+                (dec nivelActual))
+            ;li ;Para regresar la lista de niveles (en forma de lista)
+            (figura li car))))
+
+;Espacios por nivel para el triangulo relleno
+(defn full_triangle_spaces
+    ([niveles nivel]
+        (- niveles nivel)))
+
+;Caracteres por nivel para el triangulo relleno
+(defn full_triangle_chars
+    ([nivel]
+        (- (* nivel 2) 1)))
+
