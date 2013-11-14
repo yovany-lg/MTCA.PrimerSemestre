@@ -1,3 +1,5 @@
+;Triangulo relleno
+
 (require '[clojure.string :as ss])
 
 (defn caracteres 
@@ -57,7 +59,7 @@
         (full_triangle niveles ;Niveles
             car ;Caracter de relleno
             (list (list (full_triangle_spaces niveles niveles)
-                (full_triangle_chars niveles)))  ;Lista que contiene a la lista del primer nivel
+                    (full_triangle_chars niveles)))  ;Lista que contiene a la lista del primer nivel
             (dec niveles)))
     ([niveles car li nivelActual]
         (if (> nivelActual 0)
