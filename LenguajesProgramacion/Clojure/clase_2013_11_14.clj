@@ -15,10 +15,8 @@
 
 ;Función Mayor
 (defn mayor
-    ([]
-        nil)
-    ([n]
-        n)
+    ([] nil)
+    ([n] n)
     ([n1 n2]
         (if (nil? n1)
             (if (nil? n2)
@@ -32,7 +30,30 @@
 
 (reduce mayor [5 8 10])
 
-(loop [result [] x 5]
-    (if (zero? x)
-        result
-        (recur (conj result x) (dec x))))
+(defn myMap
+    ([f li]
+        (mymap f (rest li) (list (f (first li)))))
+    ([f li f_li]
+        (if (empty? li)
+            (invertList f_li)
+            (recur f (rest li) (cons (f (first li)) f_li)))))
+
+(defn invertList
+    ([li]
+        (invertList (rest li) (list (first li))))
+    ([li lifinal]
+        (if (empty? li)
+            lifinal
+            (recur (rest li) (cons (first li) lifinal)))))
+
+(defn myFilter
+    ([f li]
+        (myFilter f (rest li) (if (f (first li))
+                                (list (first li))
+                                (list))))
+    ([f li final_li]
+        (if (empty? li)
+            (invertList final_li)
+            (recur f (rest li) (if (f (first li))
+                                (cons (first li) final_li)
+                                final_li)))))
