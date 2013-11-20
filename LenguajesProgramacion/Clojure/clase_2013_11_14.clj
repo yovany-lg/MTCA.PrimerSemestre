@@ -1,17 +1,17 @@
-(map str [1 2 3])
+;¡¡¡¡IMPORTANTE!!!!: Siempre declarar el tratamiento para listas vacías...
+;De lo contrario se puede ciclar esta cosa del demonio y sin avisar... XD
 
+;(map str [1 2 3])
 ;Función Anónima
 ;1
-(fn [x] (+ 1 x))
+;(fn [x] (+ 1 x))
 ;2
-#(+ 1 %1)
-
+;#(+ 1 %1)
 ;Filter
-(filter #(> %1 10)
-    [5 11 9 10])
-
+;(filter #(> %1 10)
+;    [5 11 9 10])
 ;Reduce
-(reduce * [1 2 3 4])
+;(reduce * [1 2 3 4])
 
 ;Función Mayor
 (defn greater
@@ -30,32 +30,83 @@
 
 (reduce greater [5 8 10])
 
+;Invertir una lista
 (defn invertList
     ([li]
-        (invertList (rest li) (list (first li))))
+        (if (empty? li)
+            '()
+            (invertList (rest li) (list (first li)))))
     ([li lifinal]
         (if (empty? li)
             lifinal
             (recur (rest li) (cons (first li) lifinal)))))
+;Mi definición de Map
 (defn myMap
     ([f li]
-        (myMap f (rest li) (list (f (first li)))))
+        (if (empty? li )
+            '()
+            (myMap f 
+                (rest li) 
+                (list (f (first li))))))
     ([f li f_li]
         (if (empty? li)
             (invertList f_li)
             (recur f (rest li) (cons (f (first li)) f_li)))))
 
+;Mi definición de Filter
 (defn myFilter
     ([f li]
-        (myFilter f (rest li) (if (f (first li))
-                                (list (first li))
-                                (list))))
+        (if (empty? li)
+            '()
+            (myFilter f
+                (rest li)
+                (if (f (first li)) 
+                    (list (first li))
+                    '()))))
     ([f li final_li]
         (if (empty? li)
             (invertList final_li)
             (recur f (rest li) (if (f (first li))
                                 (cons (first li) final_li)
                                 final_li)))))
+
+;Se retorna una lista libre de apariciones del elemento
+(defn itemDistinct
+    [item li]
+    (if (empty? li)
+        '()
+        (myFilter (fn [x] (not (= item x))) li)))
+
+;Función que determina el número de apariciones del elemento en una lista
+(defn itemCount
+    [item li]
+    (if (empty? li)
+        0
+        (count (myFilter (fn [x] (= item x)) li))))
+
+;Concatena la primera lista con la segunda. Aún no se para que la generé... jeje
+(defn listConcat    
+    ([li1 li2]
+        (if (empty? li1)
+            (if (empty? li2)
+                '()
+                li2)
+            (if (empty? li2)
+                li1
+                (listConcat (invertList li1) li2 li2))))
+    ([li1 li2 liOut]
+        (if (empty? li1)
+            liOut
+            (recur (rest li1) li2 (conj liOut (first li1))))))
+
+(defn pow [x y] 
+    (Math/pow x y))
+
+(defn sqrt [x] 
+    (Math/sqrt x))
+
+;Funciones mas avanzadas...
+
 ;Promedio
 (defn average 
     ([li]
@@ -78,45 +129,35 @@
         (if (empty? li)
             '()
             (freq li '())))
-    ([li item liOut]  ;Devolver una lista sin las apariciones del elemento buscado
-        (if (empty? li)
-            liOut
-            (recur (rest li) 
-                item 
-                (if (= item (first li))
-                    ;Omitir de la lista de salida al elemento que es igual
-                    liOut   
-                    ;Solo retornar al resto de los elementos
-                    (cons (first li) liOut)))))
+;    ([li item liOut]  ;Devolver una lista sin las apariciones del elemento buscado
+;        (if (empty? li)
+;            liOut
+;            (recur (rest li) 
+;                item 
+;                (if (= item (first li))
+;                    ;Omitir de la lista de salida al elemento que es igual
+;                    liOut   
+;                    ;Solo retornar al resto de los elementos
+;                    (cons (first li) liOut)))))
     ([li liOut]
         (if (empty? li)
             liOut
             ;Se procesa el primer elemento de la lista
             ;es la única vez que se hará para dicho elemento
             ;Se retorna una lista libre de apariciones de dicho elemento
-            (recur (freq li (first li) '()) 
-                ;Se genera la lista de apariciones del i-ésimo elemento
-                (cons (list (first li) 
-                        ;Función que determina el número de apariciones del i-ésimo elemento en la lista original
-                        (count (myFilter (fn [x] (= (first li) x)) li)))    
+            (recur (itemDistinct (first li) li);(freq li (first li) '()) 
+                (cons [(first li) 
+                        ;Función que determina el número de apariciones del i-ésimo elemento en la lista actual
+                        (itemCount (first li) li)] 
                     liOut)))))
 
-(defn listConcat    ;Concatena la primera lista con la segunda
-    ([li1 li2]
-        (if (empty? li1)
-            (if (empty? li2)
-                '()
-                li2)
-            (if (empty? li2)
-                li1
-                (listConcat (invertList li1) li2 li2))))
-    ([li1 li2 liOut]
-        (if (empty? li1)
-            liOut
-            (recur (rest li1) li2 (conj liOut (first li1))))))
-
-
-
 ;desviacion estandard
+(defn stDeviation
+    ([li] 
+        (stDeviation li (average li) '()))
+    ([li avg liOut]
+        (if (empty? li)
+            (sqrt (average liOut))
+            (recur (rest li) avg (cons (pow (- (first li) avg) 2) liOut)))))
 ;mediana
 ;moda
