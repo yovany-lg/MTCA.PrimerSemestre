@@ -129,16 +129,6 @@
         (if (empty? li)
             '()
             (freq li '())))
-;    ([li item liOut]  ;Devolver una lista sin las apariciones del elemento buscado
-;        (if (empty? li)
-;            liOut
-;            (recur (rest li) 
-;                item 
-;                (if (= item (first li))
-;                    ;Omitir de la lista de salida al elemento que es igual
-;                    liOut   
-;                    ;Solo retornar al resto de los elementos
-;                    (cons (first li) liOut)))))
     ([li liOut]
         (if (empty? li)
             liOut
@@ -157,7 +147,17 @@
         (stDeviation li (average li) '()))
     ([li avg liOut]
         (if (empty? li)
-            (sqrt (average liOut))
+            ;s = sqrt(sumatoria((xi - xavg)^2)/(N-1))
+            (sqrt (average (rest liOut) (first liOut) (- (count liOut) 1)))
             (recur (rest li) avg (cons (pow (- (first li) avg) 2) liOut)))))
+
+(defn ageDeviation
+    [li]
+    ;Obtener edades y filtrar los elementos que sean nulos, 
+    ;ocurre un error en el cálculo de la desviación estándar si hay un elemento nulo en la lista
+    (stDeviation (myFilter (fn [x] (not (= x nil))) (myMap (fn [x] (x :edad)) li))))
+;'({:nombre "yovany" :edad 28} {:nombre "mauricio" :edad 26})
+
 ;mediana
+
 ;moda
