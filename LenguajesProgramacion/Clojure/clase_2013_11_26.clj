@@ -1,5 +1,5 @@
 ;Del log de acceso proporcionado, extraer la sig. información, a través de una API tipo DSL (Lenguaje de Dominio Específico, Semántica):
-;- IPs y sus cantidades de acceso global y promedio mensual.
+;*- IPs y sus cantidades de acceso global y promedio mensual.
 ;- IPs mas visitantes y las URLs que han visto.
 ;Devolver Datos!!, en cualquier formato.
 ;- URLs más visitadas, cantidades y las IPs que la visitaron con fecha.
@@ -11,6 +11,165 @@
 
 (use 'clojure.java.io)
 (require '[clojure.string :as st])
+
+;--------------------Análisis del LOG
+(defn getIP
+    "Obtiene la IP de una línea de entrada log."
+    [line]
+    (first (re-find #"([0-9]{1,3}\.){3}([0-9]{1,3}){1}" line)))
+
+(defn getDateTime
+    "Obtiene la Hora y Fecha de acceso en una línea de entrada log."
+    [line]
+    (first (re-find #"\[(0[1-9]|[1-2][0-9]|3[01])[\-\/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d):(\d\d):(\d\d):(\d\d)\s([\-\+][\d]{4})\]" line)))
+
+(defn getURL
+    "Obtiene la URL accesada en una línea de entrada log."
+    [line]
+    (get (re-find #"\p{Punct}(([A-Z]+)\s([\/]{1}[\w\p{Punct}]*)\s([\w\p{Punct}]+))\p{Punct}" line) 1))
+
+(defn logLineMap
+    "Obtiene un hash-map con claves para IP, dateTime y url de una línea de entrada log."
+    [line]
+    (hash-map :ip  (getIP line)
+            :dateTime (getDateTime line)
+            :url (getURL line)))
+
+(defn logRead
+    "Devuelve un vector de hash-maps con las claves para IP, dateTime y url."
+    []
+    (with-open [rdr (reader "C:/Users/Yovany/Documents/GitHub/MTCA.PrimerSemestre/LenguajesProgramacion/Clojure/buhoz.net.log")]
+        (reduce 
+            (fn [x y]
+                (conj x (logLineMap y)))
+            []
+            (line-seq rdr))))
+
+(defn groupByIP
+    "Agrupa por IPs los accesos de un vector de hash-maps con las claves para IP, dateTime y url.
+    Devuelve un vector."
+    [logHashVect]
+    (seq (group-by :ip logHashVect)))
+
+(defn getDay
+    "Obtiene el día, més y año de un hash-map en particular, usando la clave dateTime."
+    [hashEntry]
+    (first (re-find #"(0[1-9]|[1-2][0-9]|3[01])[\-\/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (hashEntry :dateTime))))
+
+(defn groupByDay
+    "Agrupa los accesos de un vector de hash-maps (con las claves para IP, dateTime y url) por día, més y su respectivo año."
+    [logHashVect]
+    (seq (group-by getDay logHashVect)))
+
+(defn getMonth
+    "Obtiene el més y año de un hash-map en particular, usando la clave dateTime."
+    [hashEntry]
+    (first (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (hashEntry :dateTime))))
+
+(defn groupByMonth
+    "Agrupa por més (y su respectivo año) los accesos de un vector de hash-maps con las claves para IP, dateTime y url."
+    [logHashVect]
+    (seq (group-by getMonth logHashVect)))
+
+(defn getYear
+    "Obtiene el año de un hash-map en particular, usando la clave dateTime."
+    [hashEntry]
+    (peek (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (hashEntry :dateTime))))
+
+(defn groupByYear
+    "Agrupa por año los accesos de un vector de hash-maps con las claves para IP, dateTime y url."
+    [logHashVect]
+    (seq (group-by getYear logHashVect)))
+
+(defn globalAccess
+    "Devuelve la cantidad de acceso global. 
+    - Si se usa para un vector de acceso de una IP, el cual se obtiene con la función groupByIP y la clave de la IP, 
+    devolverá la cantidad de acceso global de la IP en cuestión."
+    [logHashVect]
+    (count logHashVect))
+
+(defn dailyAccessAverage
+    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
+    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
+    devuelve el promedio de accesos por día."
+    [logHashVect]  ;Proviene de logRead
+    (/ (count logHashVect) (count (groupByDay logHashVect))))
+
+(defn monthlyAccessAverage
+    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
+    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
+    devuelve el promedio de accesos por mes."
+    [logHashVect]  ;Proviene de logRead
+    (/ (count logHashVect) (count (groupByMonth logHashVect))))
+
+(defn yearlyAccessAverage
+    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
+    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
+    devuelve el promedio de accesos por año."
+    [logHashVect]  ;Proviene de logRead
+    (/ (count logHashVect) (count (groupByYear logHashVect))))
+
+(defn accessByMonth
+    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
+    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
+    devuelve un vector de hash-maps con claves para el mes y la cantidad de acceso correspondiente."
+    ([logHashVect]
+        (accessByMonth (groupByMonth logHashVect) []))
+    ([monthVect liOut]
+        (if (empty? monthVect)
+            liOut
+                (recur (rest monthVect) (let [monthEntry (first monthVect)]
+                (conj liOut (hash-map :month (get monthEntry 0) :monthAccess (globalAccess (get monthEntry 1)))))))))
+
+(defn accessInfoByIP
+    ([logHashVect]  ;Proviene de logRead
+        (accessInfoByIP (groupByIP logHashVect) []))
+    ([logHashByIP liOut]
+        (if (empty? logHashByIP)
+            liOut
+            (recur (rest logHashByIP) (let [ipLogVect (first logHashByIP)]
+                (conj liOut (hash-map :ip (get ipLogVect 0) 
+                                :globalAccess (globalAccess (get ipLogVect 1))
+                                :accessByMoth (accessByMonth (get ipLogVect 1))
+                                :monthlyAccessAvg (monthlyAccessAverage (get ipLogVect 1)))))))))
+
+(defn accessAverageInfo
+    [logHashVect]
+    (hash-map :dailyAccessAverage (dailyAccessAverage logHashVect)
+        :monthlyAccessAverage (monthlyAccessAverage logHashVect)
+        :yearlyAccessAverage (yearlyAccessAverage logHashVect)))
+
+
+
+
+
+
+
+
+
+
+(get (groupByIP (logRead)) "5.10.83.15")
+(def dateTime
+    ((first (get (groupByIP (logRead)) "5.10.83.15")) :dateTime))
+(ipGlobalAccess (get (groupByIP (logRead)) "5.10.83.15"))
+
+(group-by (fn [x] 
+        (first (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (x :dateTime)))) 
+    ((groupByIP (logRead)) "5.10.83.15"))
+
+(first (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" dateTime))
+(peek (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" dateTime))
+
+(groupByMonth (get (groupByIP (logRead)) "5.10.83.15"))
+(groupByYear (get (groupByIP (logRead)) "5.10.83.15"))
+(groupByIP (logRead))
+(let [item (first (groupByIP (logRead)))] item);(conj [] (hash-map :ip (first item) 
+        :globalAccess (globalAccess (rest item)))))
+
+["5.10.83.15" [{:url "GET /fotos/index.php/Cosas-del-2008/Julio/Hannover/jardines/P1010835 HTTP/1.1", :dateTime "[26/Oct/2012:02:40:01 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/var/albums/2012/julio-visita-veracruz/P1080777.JPG?m=1344823049 HTTP/1.1", :dateTime "[26/Nov/2013:02:47:38 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/form/add/comments/4897 HTTP/1.1", :dateTime "[26/Nov/2013:02:49:24 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/2012/marzo-monte-alban/P1080127 HTTP/1.1", :dateTime "[26/Nov/2013:02:50:13 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/form/add/comments/4461 HTTP/1.1", :dateTime "[26/Nov/2013:03:07:09 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/2007_001/04/granada/P1000158 HTTP/1.1", :dateTime "[26/Nov/2013:03:39:30 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/Cosas-del-2008/Octubre/barcelona/sagrada_familia/p1020202 HTTP/1.1", :dateTime "[26/Nov/2013:04:08:04 -0600]", :ip "5.10.83.15"}]]
+[{:url "GET /fotos/index.php/Cosas-del-2008/Julio/Hannover/jardines/P1010835 HTTP/1.1", :dateTime "[26/Oct/2012:02:40:01 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/var/albums/2012/julio-visita-veracruz/P1080777.JPG?m=1344823049 HTTP/1.1", :dateTime "[26/Nov/2013:02:47:38 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/form/add/comments/4897 HTTP/1.1", :dateTime "[26/Nov/2013:02:49:24 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/2012/marzo-monte-alban/P1080127 HTTP/1.1", :dateTime "[26/Nov/2013:02:50:13 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/form/add/comments/4461 HTTP/1.1", :dateTime "[26/Nov/2013:03:07:09 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/2007_001/04/granada/P1000158 HTTP/1.1", :dateTime "[26/Nov/2013:03:39:30 -0600]", :ip "5.10.83.15"} {:url "GET /fotos/index.php/Cosas-del-2008/Octubre/barcelona/sagrada_familia/p1020202 HTTP/1.1", :dateTime "[26/Nov/2013:04:08:04 -0600]", :ip "5.10.83.15"}]
+
+;--------------------------------------------------Código auxiliar y de pruebas
 
 ;*********************************Análisis estadístico
 ;Se retorna una lista libre de apariciones del elemento
@@ -73,44 +232,17 @@
             (recur (rest li) avg (cons (pow (- (first li) avg) 2) liOut)))))
 ;*********************************
 
-;--------------------Análisis del LOG
-(defn getIP
-    "Obtiene la IP de una líne de entrada log."
-    [line]
-    (first (re-find #"([0-9]{1,3}\.){3}([0-9]{1,3}){1}" line)))
 
-(defn getDateTime
-    "Obtiene la Hora y Fecha de acceso en una línea de entrada log."
-    [line]
-    (first (re-find #"\[(0[1-9]|[1-2][0-9]|3[01])[\-\/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d):(\d\d):(\d\d):(\d\d)\s([\-\+][\d]{4})\]" line)))
 
-(defn getURL
-    "Obtiene la URL accesada en una línea de entrada log."
-    [line]
-    (get (re-find #"\p{Punct}(([A-Z]+)\s([\/]{1}[\w\p{Punct}]*)\s([\w\p{Punct}]+))\p{Punct}" line) 1))
 
-(defn logLineMap
-    "Obtiene un hash-map con claves para IP, DateTime y URL de una línea de entrada log."
-    [line]
-    (hash-map :ip  (getIP line)
-            :dateTime (getDateTime line)
-            :URL (getURL line)))
 
-(defn logRead
-    "Devuelve un vector de hash-maps con las claves para IP, DateTime y URL."
-    []
-    (with-open [rdr (reader "C:/Users/Yovany/Documents/GitHub/MTCA.PrimerSemestre/LenguajesProgramacion/Clojure/buhoz.net.log")]
-        (reduce 
-            (fn [x y]
-                (conj x (logLineMap y)))
-            []
-            (line-seq rdr))))
 
-(defn globalAccessByIP
-    "Devuelve la Frecuencia de acceso por IPs"
-    [hashVect]
-    (freq (map (fn [x] (x :ip)) 
-                hashVect)))
+
+
+
+
+
+
 
 
 
@@ -121,7 +253,11 @@
 ;        (let [lines (line-seq rdr)]
 ;            (count lines))))
 
-
+(defn globalAccessByIP
+    "Devuelve la Frecuencia de acceso por IPs"
+    [logHashVect]
+    (freq (map (fn [x] (x :ip)) 
+                logHashVect)))
 
 
 (defn webLogRead_v1 ;Obsolete
