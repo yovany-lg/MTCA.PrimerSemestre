@@ -156,3 +156,7 @@
 (defn matrixAdition
     [A B]
     (merge-with (fn [m1 m2] (merge-with + m1 m2)) A B))
+
+(defn matrixCellAssoc
+    [A row col value]
+    (merge-with merge A {(keyword (str "row" row)) {(keyword (str "col" col)) value}}))
