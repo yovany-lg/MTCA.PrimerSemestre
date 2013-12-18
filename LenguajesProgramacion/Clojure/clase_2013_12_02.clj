@@ -19,43 +19,52 @@
 
 ;{:f1 {:c1 :c2}}
 
+;Ejemplo del formato utilizado para una matriz
 (def m1 {:row2 {:col1 -3}, :row3 {:col1 -2}, :row1 {:col1 1}})
 (def m2 {:row2 {:col1 3}, :row3 {:col1 2}, :row1 {:col1 -1}})
 (def B {:row3 {:col3 9, :col2 8, :col1 7}, :row2 {:col3 6, :col2 5, :col1 4}, :row1 {:col3 3, :col2 2, :col1 1}})
 
 
 (defn matrixNewRow
+    "Generar una nueva fila"
     [id cols]
     (hash-map (keyword (str "row" id)) 
         (reduce #(merge %1 (hash-map (keyword %2) 0)) {} (map #(str "col" %1) (range 1 (+ cols 1))))))
 
 (defn matrixNew
+    "Genera una matriz con filas y columnas"
     [rows cols]
     (reduce #(merge %1 (matrixNewRow %2 cols))
         {} 
         (range 1 (+ rows 1))))
 
 (defn matrixRowsNum
+    "Devuelve la cantidad de filas en una matriz"
     [matrix]
     (count matrix))
 
 (defn matrixColsNum
+    "Devuelve la cantidad de columnas en una matríz"
     [matrix]
     (count (matrix :row1)))
 
 (defn matrixRow
+    "Devuelve una fila en un vector"
     [matrix row]
     (vec (map #(get %1 1) (sort-by key (get matrix (keyword (str "row" row)))))))
 
 (defn matrixRowsVectors
+    "Devuelve una matriz en un vector de filas"
     [matrix]
     (vec (map (fn [x] (vec (map #(get % 1) (sort-by key (get x 1))))) (sort-by key matrix))))
 
 (defn matrixCol
+    "Devuelve una columna en un vector"
     [matrix col]
     (vec (map #(get (get %1 1) (keyword (str "col" col))) (sort-by key matrix))))
 
 (defn matrixColsVectors
+    "Devuelve una matriz en un vector de columnas"
     ([matrix]
         (matrixColsVectors (sort-by key matrix) [] 1 (matrixColsNum matrix)))
     ([sortedMatrix colsVect n colsNum]
@@ -64,18 +73,22 @@
             colsVect)))
 
 (defn rowScalarProduct
+    "Realiza la multiplicación de una fila por un escalar"
     [row x]
     (reduce (fn [newRow col] (merge newRow (hash-map (key col) (* (val col) x)))) {} row))
 
 (defn matrixScalarProduct
+    "Realiza la multiplicación de una matríz por un escalar"
     [matrix x]
     (reduce (fn [newMatrix row] (merge newMatrix (hash-map (key row) (rowScalarProduct (val row) x)))) {} matrix))
 
 (defn rowColMult
+    "Multiplicación de una fila por una columna, como parte de una multiplicación entre matrices"
     [row col]   ;En forma de vector (los elementos estan ordenados)
     (reduce + (map * row col)))
 
 (defn multByRowCols
+    "Multiplicación de una fila por varias columnas, como parte de una multiplicación entre matrices"
     ([rowVector colsVector]
         (multByRowCols rowVector colsVector []))
     ([rowVector colsVector rowOut]
@@ -87,6 +100,7 @@
                     (rowColMult rowVector (first colsVector)))))))
 
 (defn rowVectToMap
+    "Convierte un vector fila a un hash-map"
     ([rowVect]
         (rowVectToMap rowVect 1 {}))
     ([rowVect rowCount hashOut]
@@ -98,6 +112,7 @@
                     (hash-map (keyword (str "col" rowCount)) (first rowVect)))))))
 
 (defn matrixMult
+    "Multiplicación de matrices"
     ([A B]
         (if (= (matrixColsNum A) (matrixRowsNum B))
             (matrixMult (matrixRowsVectors A) (matrixColsVectors B) {} 1)
@@ -113,6 +128,7 @@
                 (inc rowCount)))))
 
 (defn rowsVectorsToMatrix
+    "Genera una matriz a partir de un vector de filas (en forma de vector)"
     ([rowsVectors]
         (rowsVectorsToMatrix rowsVectors {} 1))
     ([rowsVectors matrixOut rowCount]
@@ -123,6 +139,7 @@
                 (inc rowCount)))))
 
 (defn matrixToStr
+    "Genera una cadena imprimible de una matríz"
     ([matrix]
         (matrixToStr (matrixRowsVectors matrix) ""))
     ([rowsVectors strOut]
@@ -131,14 +148,17 @@
             (recur (rest rowsVectors) (str strOut (reduce (fn [string x] (str string x "\t")) "" (first rowsVectors)) "\n")))))
 
 (defn matrixTranspose
+    "Transpuesta de una matríz"
     [matrix]
     (rowsVectorsToMatrix (matrixColsVectors matrix)))
 
 (defn rowReplace
+    "Reemplazar una fila por otra (en forma de vector)"
     [matrix rowVector rowIndex]
     (merge-with merge matrix (hash-map (keyword (str "row" rowIndex)) (rowVectToMap rowVector))))
 
 (defn colReplace
+    "Reemplazar una columna por otra (en forma de vector)"
     ([matrix colVector colIndex]
         (colReplace (sort-by key matrix) colVector {} colIndex))
     ([sortedMatrix colVector matrixOut colIndex]
@@ -154,9 +174,11 @@
                 colIndex))))
 
 (defn matrixAdition
+    "Suma de matrices"
     [A B]
     (merge-with (fn [m1 m2] (merge-with + m1 m2)) A B))
 
 (defn matrixCellAssoc
+    "Reemplazar una celda"
     [A row col value]
     (merge-with merge A {(keyword (str "row" row)) {(keyword (str "col" col)) value}}))

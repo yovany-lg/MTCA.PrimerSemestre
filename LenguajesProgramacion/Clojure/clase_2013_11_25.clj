@@ -1,3 +1,4 @@
+;--------------------Solo código visto en clases
 ;Closures
 (defn adder
     [added]

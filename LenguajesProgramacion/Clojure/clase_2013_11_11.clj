@@ -1,4 +1,5 @@
-;Triangulo relleno
+
+;----------------Implementación del Triangulo relleno
 
 (require '[clojure.string :as ss])
 
@@ -51,6 +52,16 @@
             cad
             (recur (rest li) car (ss/join (list cad (nivel (first li) car)))))))
 
+;Espacios por nivel para el triangulo relleno
+(defn full_triangle_spaces
+    ([niveles nivel]
+        (- niveles nivel)))
+
+;Caracteres por nivel para el triangulo relleno
+(defn full_triangle_chars
+    ([nivel]
+        (- (* nivel 2) 1)))
+
 ;Función que genera un triangulo en una lista de niveles, los cuales tienen forma de lista
 (defn full_triangle
     ([niveles]
@@ -72,13 +83,15 @@
             ;li ;Para regresar la lista de niveles (en forma de lista)
             (figura li car))))
 
-;Espacios por nivel para el triangulo relleno
-(defn full_triangle_spaces
-    ([niveles nivel]
-        (- niveles nivel)))
 
-;Caracteres por nivel para el triangulo relleno
-(defn full_triangle_chars
-    ([nivel]
-        (- (* nivel 2) 1)))
-
+;***************Ejemplo de pruebas
+user=> (print (full_triangle 8))
+       *
+      ***
+     *****
+    *******
+   *********
+  ***********
+ *************
+***************
+nil

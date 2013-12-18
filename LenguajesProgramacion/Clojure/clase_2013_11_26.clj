@@ -24,7 +24,7 @@
     (first (re-find #"\[(0[1-9]|[1-2][0-9]|3[01])[\-\/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d):(\d\d):(\d\d):(\d\d)\s([\-\+][\d]{4})\]" line)))
 
 (defn getTime
-    "Obtiene la Hora y Fecha de acceso en una línea de entrada log."
+    "Obtiene la Hora de acceso en una línea de entrada log."
     [line]
     (get (re-find #"(20\d\d):((\d\d):(\d\d)):(\d\d)" line) 2))
 
@@ -43,8 +43,8 @@
 
 (defn logRead
     "Devuelve un vector de hash-maps con las claves para IP, dateTime y url."
-    []
-    (with-open [rdr (reader "C:/Users/Yovany/Documents/GitHub/MTCA.PrimerSemestre/LenguajesProgramacion/Clojure/buhoz.net.log")]
+    [fileUrl]
+    (with-open [rdr (reader fileUrl)]
         (reduce 
             (fn [x y]
                 (conj x (logLineMap y)))
@@ -52,7 +52,7 @@
             (line-seq rdr))))
 
 (defn groupByIP
-    "Agrupa por IPs los accesos de un vector de hash-maps con las claves para IP, dateTime y url.
+    "Agrupa por IPs los accesos de un vector de hash-maps (el cual tiene el formato de logRead) con las claves para IP, dateTime y url.
     Devuelve un vector."
     [logHashVect]
     (seq (group-by :ip logHashVect)))
@@ -63,7 +63,7 @@
     (first (re-find #"(0[1-9]|[1-2][0-9]|3[01])[\-\/](Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (hashEntry :dateTime))))
 
 (defn groupByDay
-    "Agrupa los accesos de un vector de hash-maps (con las claves para IP, dateTime y url) por día, més y su respectivo año."
+    "Agrupa los accesos de un vector de hash-maps (el cual tiene el formato de logRead y tiene las claves para IP, dateTime y url) por día, més y su respectivo año."
     [logHashVect]
     (seq (group-by getDay logHashVect)))
 
@@ -73,7 +73,7 @@
     (first (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (hashEntry :dateTime))))
 
 (defn groupByMonth
-    "Agrupa por més (y su respectivo año) los accesos de un vector de hash-maps con las claves para IP, dateTime y url."
+    "Agrupa por més (y su respectivo año) los accesos de un vector de hash-maps (el cual tiene el formato de logRead) con las claves para IP, dateTime y url."
     [logHashVect]
     (seq (group-by getMonth logHashVect)))
 
@@ -83,12 +83,12 @@
     (peek (re-find #"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\-\/](20\d\d)" (hashEntry :dateTime))))
 
 (defn groupByYear
-    "Agrupa por año los accesos de un vector de hash-maps con las claves para IP, dateTime y url."
+    "Agrupa por año los accesos de un vector de hash-maps (el cual tiene el formato de logRead) con las claves para IP, dateTime y url."
     [logHashVect]
     (seq (group-by getYear logHashVect)))
 
 (defn groupByURL
-    "Agrupa por url los accesos de un vector de hash-maps con las claves para IP, dateTime y url."
+    "Agrupa por url los accesos de un vector de hash-maps (el cual tiene el formato de logRead) con las claves para IP, dateTime y url."
     [logHashVect]
     (seq (group-by :url logHashVect)))
 
@@ -98,35 +98,37 @@
     (get (re-find #"(\d\d):" (hashEntry :time)) 1))
 
 (defn groupByHour
-    "Agrupa por url los accesos de un vector de hash-maps con las claves para IP, dateTime y url."
+    "Agrupa por url los accesos de un vector de hash-maps (el cual tiene el formato de logRead) con las claves para IP, dateTime y url."
     [logHashVect]
     (seq (group-by getHour logHashVect)))
 
 (defn globalAccess
-    "Devuelve la cantidad de acceso global. 
-    - Si se usa para un vector de acceso de una IP, el cual se obtiene con la función groupByIP y la clave de la IP, 
-    devolverá la cantidad de acceso global de la IP en cuestión."
+    "Devuelve la cantidad de acceso global. Esta función puede ser usada con el vector de hash-maps principal (de logRead),
+    o de un grupo en particular (por IP, Fecha ...)."
     [logHashVect]
     (count logHashVect))
 
 (defn dailyAccessAverage
-    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
-    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
-    devuelve el promedio de accesos por día."
+    "Procesa un vector de hash-maps (el cual tiene el formato de logRead) con claves de ip, url y dateTime. 
+    Devuelve devuelve el promedio de accesos por día.
+    Esta función puede ser usada con el vector de hash-maps principal (de logRead),
+    o de un grupo en particular (por IP, URL ...)."
     [logHashVect]  ;Proviene de logRead
     (/ (count logHashVect) (count (groupByDay logHashVect))))
 
 (defn monthlyAccessAverage
-    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
-    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
-    devuelve el promedio de accesos por mes."
+    "Procesa un vector de hash-maps (el cual tiene el formato de logRead) con claves de ip, url y dateTime.
+    Devuelve el promedio de accesos por mes.
+    Esta función puede ser usada con el vector de hash-maps principal (de logRead),
+    o de un grupo en particular (por IP, URL ...)."
     [logHashVect]  ;Proviene de logRead
     (/ (count logHashVect) (count (groupByMonth logHashVect))))
 
 (defn yearlyAccessAverage
-    "Procesa un vector de hash-maps con claves de ip, url y dateTime.
-    Independientemente si el vector de hash-maps de entrada esta filtrado por ips,
-    devuelve el promedio de accesos por año."
+    "Procesa un vector de hash-maps (el cual tiene el formato de logRead) con claves de ip, url y dateTime.
+    Devuelve el promedio de accesos por año.
+    Esta función puede ser usada con el vector de hash-maps principal (de logRead),
+    o de un grupo en particular (por IP, URL ...)."
     [logHashVect]  ;Proviene de logRead
     (/ (count logHashVect) (count (groupByYear logHashVect))))
 
@@ -143,16 +145,19 @@
                 (conj liOut (hash-map :month (get monthEntry 0) :monthAccess (globalAccess (get monthEntry 1)))))))))
 
 (defn accessAverageInfo
+    "Agrupa en un hash-map la información referente a los promedios de acceso diario, mensual y anual"
     [logHashVect]
     (hash-map :dailyAccessAverage (dailyAccessAverage logHashVect)
         :monthlyAccessAverage (monthlyAccessAverage logHashVect)
         :yearlyAccessAverage (yearlyAccessAverage logHashVect)))
 
 (defn visitedURLs
+    "Devuelve las urls visitadas"
     [logHashVect]  ;Proviene de logRead
     (reduce (fn [x y] (conj x (y :url))) [] logHashVect))
 
 (defn accessInfoByIP
+    "Genera la información de acceso por IPs."
     ([logHashVect]  ;Proviene de logRead
         (accessInfoByIP (groupByIP logHashVect) []))
     ([logHashByIP liOut]
@@ -166,6 +171,7 @@
                                 :ip (get ipLogVect 0) )))))))
 
 (defn accessDates
+    "Devuelve la cantidad de acceso por fechas"
     [logHashVect]
     (map (fn [x] 
             (hash-map :date (get x 0) 
@@ -173,6 +179,7 @@
         (groupByDay logHashVect)))
 
 (defn accessDatesByIP
+    "Devuelve la cantidad de acceso por fechas para cada IP"
     [logHashVect]
     (map (fn [x] 
             (hash-map :ip (get x 0) 
@@ -180,6 +187,7 @@
         (groupByIP logHashVect)))
 
 (defn accessInfoByURL
+    "Devuelve la información de acceso por URLs"
     ([logHashVect]  ;Proviene de logRead
         (accessInfoByURL (groupByURL logHashVect) []))
     ([logHashByURL liOut]
@@ -191,6 +199,7 @@
                                     :url (get urlLogVect 0))))))))
 
 (defn accessInfoByHour
+    "Devuelve las cantidades de acceso por hora"
     ([logHashVect]  ;Proviene de logRead
         (accessInfoByHour (groupByHour logHashVect) []))
     ([logHashByHour liOut]

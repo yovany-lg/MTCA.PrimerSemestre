@@ -1,4 +1,15 @@
-;--------MANEJO DE MATRICES
+
+
+(defn subvector
+    "Obtiene un subvector desde la posición 0 a la posición dada ((- size 1) por el manejo de los índices)"
+    ([vect size]
+        (subvector vect size 0 []))
+    ([vect size vectIndex vectOut]
+        (if (< vectIndex size)
+            (recur vect size (inc vectIndex) (conj vectOut (get vect vectIndex)))
+            vectOut)))
+
+;--------MANEJO DE MATRICES, Estos códigos se copiaron de clase_2013_12_02.clj
 (defn matrixNewRow
     [id cols]
     (hash-map (keyword (str "row" id)) 
@@ -146,12 +157,15 @@
 
 ;-------------------Problena de las N reinas en un tablero de ajedrez
 (defn round [x] 
+    "Para redondear un número flotante"
     (Math/round x))
 
 (defn abs [x] 
+    "Obtener el valor absoluto"
     (Math/abs x))
 
 (defn solAdjust
+    "Realiza el ajuste de una solución dada, se realizan pequeñas variaciones en cada variable"
     [posVect N]
     (vec (map (fn [q] 
             (let [qad (+ q (- 1 (rand-int 3)))]
@@ -162,14 +176,17 @@
                         qad)))) posVect)))
 
 (defn takeMemSol
+    "Toma una solución de la memoria"
     [hMem hms]
     ((get hMem (rand-int hms)) :posVect))
 
 (defn randSol
+    "Obtiene una solución aleatoria"
     [N]
     (vec (map #(+ % (rand-int N)) (repeat N 1))))
 
 (defn newSol
+    "Obtiene una nueva solución en base al criterio del algoritmo Harmony Search"
     [N hMS mCR pAR hMem]
     (if (<= (rand 1) mCR)
         (let [sol (takeMemSol hMem hMS)]
@@ -179,14 +196,17 @@
         (randSol N)))
 
 (defn verFnVal ;Función de búsqueda vertical
+    "Devuelve las intersecciones de manera vertical"
     ([posVect]
         (/ (reduce + (filter #(> % 1) (vals (frequencies posVect)))) (count posVect))))
 
 (defn diagMatch
+    "Recibe dos vectores de posición con formato [row col] y verifica si se intersectan en diagonal"
     [v1 v2]
     (reduce = (map #(abs (- %1 %2)) v1 v2)))
 
 (defn diagEval
+    "Recibe una fila y columna y procesa el resto de un vector de posiciones en busca de intersecciones en diagonal"
     ([row col posVect]
         (diagEval row col (inc row) posVect 0))
     ([row col currentRow posVect matches]
@@ -201,6 +221,7 @@
                     matches)))))
 
 (defn diagFnVal    ;Función de búsqueda en diagonal 
+    "Devuelve las intersecciones de manera diagonal"
     ([posVect]
         (diagFnVal posVect 1 (count posVect) 0))
     ([posVect currentRow size res]
@@ -212,14 +233,17 @@
                 (+ res (diagEval currentRow (first posVect) (rest posVect)))))))
 
 (defn queensFnVal
+    "Devuelve las intersecciones de manera general en el presente vector de posiciones"
     [posVect]
         (+ (verFnVal posVect) (diagFnVal posVect)))
 
 (defn solDuplicated
+    "Verifica si la solución dada esta duplicada en la memoria"
     [hMem sol]
     (reduce #(or %1 (= sol (%2 :posVect))) false hMem))
 
 (defn queensHMInit
+    "Inicializa la memoria del algoritmo HS con soluciones aleatorias."
     ([N hms]
         (queensHMInit N hms []))
     ([N hms hmOut]
@@ -234,14 +258,16 @@
             (vec (sort-by :fnVal hmOut)))))
 
 (defn generateNewSol
+    "Genera una nueva solución con newSol, y verifica que no este duplicada"
     [N hMS mCR pAR hMem]
     (let [sol (newSol N hMS mCR pAR hMem)]
         (let [fnVal (queensFnVal sol)]
-            (if (or (< ((last hMem) :fnVal) fnVal) (solDuplicated hMem sol))
+            (if (or (< ((last hMem) :fnVal) fnVal) (solDuplicated hMem sol));(< ((last hMem) :fnVal) fnVal);(or (< ((last hMem) :fnVal) fnVal) (solDuplicated hMem sol))
                 (recur N hMS mCR pAR hMem)
                 {:posVect sol :fnVal fnVal}))))
 
 (defn queensSolveByHS
+    "Resuelve el problema de las reinas por HS"
     ([N hMS mCR pAR iter]
         (queensSolveByHS N hMS mCR pAR (queensHMInit N hMS) iter))
     ([N hMS mCR pAR hMem iter]
@@ -250,6 +276,7 @@
             (vec (take hMS (sort-by :fnVal hMem))))))
 
 (defn queensMatrix
+    "Genera una matriz de reinas a partir de un vector de posiciones, la cual se puede imprimir con la función matrixToStr"
     ([posVect]
         (queensMatrix posVect (matrixNew (count posVect) (count posVect)) 1))
     ([posVect matrixOut rowIndex]
@@ -262,11 +289,12 @@
 
 
 
-
+;----------------Ejemplos de uso del código anterior
 (queensSolveByHS 8 50 0.7 0.2 1000)
+;memoria devuelta con varias soluciones {.. :fnVal 0}
 [{:posVect [2 7 5 8 1 4 6 3], :fnVal 0} {:posVect [4 8 1 3 6 2 7 5], :fnVal 0} {:posVect [2 7 3 6 8 5 1 4], :fnVal 0} {:posVect [7 4 2 8 6 1 3 5], :fnVal 0} {:posVect [5 7 1 3 8 6 4 2], :fnVal 0} {:posVect [6 3 1 8 5 2 4 7], :fnVal 0} {:posVect [4 7 5 3 1 6 8 2], :fnVal 0} {:posVect [6 8 7 1 3 5 2 4], :fnVal 1/8} {:posVect [2 8 5 7 4 1 3 6], :fnVal 1/8} {:posVect [3 8 2 5 1 7 4 6], :fnVal 1/8} {:posVect [3 7 4 8 1 5 6 2], :fnVal 1/8} {:posVect [6 4 2 8 5 7 3 1], :fnVal 1/8} {:posVect [8 2 7 1 3 5 6 4], :fnVal 1/8} {:posVect [3 6 4 8 1 5 7 2], :fnVal 1/8} {:posVect [2 5 8 4 7 3 6 1], :fnVal 1/8} {:posVect [8 1 4 6 3 2 7 5], :fnVal 1/8} {:posVect [4 8 1 5 2 6 3 7], :fnVal 1/8} {:posVect [5 8 1 3 6 2 7 4], :fnVal 1/8} {:posVect [3 8 2 4 1 7 5 6], :fnVal 1/8} {:posVect [7 4 2 8 5 1 3 6], :fnVal 1/8} {:posVect [2 5 8 6 3 1 7 4], :fnVal 1/8} {:posVect [8 6 2 4 1 7 5 3], :fnVal 1/8} {:posVect [2 8 6 3 1 4 7 5], :fnVal 1/8} {:posVect [7 3 2 8 5 1 4 6], :fnVal 1/8} {:posVect [3 7 2 4 5 1 8 6], :fnVal 1/8} {:posVect [3 8 2 5 1 6 4 7], :fnVal 1/8} {:posVect [3 8 6 2 5 7 1 4], :fnVal 1/8} {:posVect [3 8 6 1 2 5 7 4], :fnVal 1/8} {:posVect [2 4 8 7 5 3 1 6], :fnVal 1/8} {:posVect [8 4 2 7 6 1 3 5], :fnVal 1/8} {:posVect [3 7 2 4 6 1 8 5], :fnVal 1/8} {:posVect [2 4 8 6 3 1 7 5], :fnVal 1/8} {:posVect [5 8 1 4 7 2 6 3], :fnVal 1/8} {:posVect [4 7 1 3 6 2 8 5], :fnVal 1/8} {:posVect [3 8 7 2 4 6 1 5], :fnVal 1/8} {:posVect [1 3 8 6 4 2 7 5], :fnVal 1/8} {:posVect [4 7 1 3 5 2 8 6], :fnVal 1/8} {:posVect [6 3 1 7 4 2 5 8], :fnVal 1/8} {:posVect [4 6 1 3 7 2 8 5], :fnVal 1/8} {:posVect [8 2 5 7 3 1 6 4], :fnVal 1/8} {:posVect [8 4 2 7 5 1 3 6], :fnVal 1/8} {:posVect [4 7 5 2 1 6 8 3], :fnVal 1/8} {:posVect [2 3 8 6 4 1 7 5], :fnVal 1/8} {:posVect [8 3 5 7 2 1 6 4], :fnVal 1/8} {:posVect [4 8 5 2 1 6 7 3], :fnVal 1/4} {:posVect [7 5 2 8 6 8 3 1], :fnVal 1/4} {:posVect [4 8 1 3 7 2 7 5], :fnVal 1/4} {:posVect [4 7 1 3 6 2 7 5], :fnVal 1/4} {:posVect [6 8 2 4 7 5 3 1], :fnVal 1/4} {:posVect [3 7 4 8 1 5 7 2], :fnVal 1/4}]
 
-user=> (print (matrixToStr (queensMatrix [2 7 5 8 1 4 6 3])))
+user=> (print (matrixToStr (queensMatrix [2 7 5 8 1 4 6 3])))   ;una solución hallada
 0   Q   0   0   0   0   0   0   
 0   0   0   0   0   0   Q   0   
 0   0   0   0   Q   0   0   0   
@@ -276,18 +304,21 @@ Q   0   0   0   0   0   0   0
 0   0   0   0   0   Q   0   0   
 0   0   Q   0   0   0   0   0   
 
+(queensSolveByHS 8 100 0.7 0.3 2000)
+[{:posVect [3 6 2 7 5 1 8 4], :fnVal 0} {:posVect [5 3 8 4 7 1 6 2], :fnVal 0} {:posVect [4 7 3 8 2 5 1 6], :fnVal 0} {:posVect [3 5 8 4 1 7 2 6], :fnVal 0} {:posVect [5 2 4 6 8 3 1 7], :fnVal 0} {:posVect [3 8 4 7 1 6 2 5], :fnVal 0} {:posVect [4 7 1 8 5 2 6 3], :fnVal 0} {:posVect [5 7 2 4 8 1 3 6], :fnVal 0} {:posVect [1 7 2 4 6 8 3 5], :fnVal 1/8} {:posVect [3 8 7 2 4 6 1 5], :fnVal 1/8} {:posVect [4 2 8 3 5 7 1 6], :fnVal 1/8} {:posVect [1 2 5 8 4 7 3 6], :fnVal 1/8} {:posVect [7 2 4 1 5 8 6 3], :fnVal 1/8} {:posVect [6 2 5 8 3 7 4 1], :fnVal 1/8} {:posVect [2 6 3 7 4 1 8 5], :fnVal 1/8} {:posVect [1 7 4 8 3 5 6 2], :fnVal 1/8} {:posVect [6 3 7 2 8 5 4 1], :fnVal 1/8} {:posVect [5 2 8 6 3 7 4 1], :fnVal 1/8} {:posVect [2 8 6 4 1 3 5 7], :fnVal 1/8} {:posVect [6 3 5 8 4 1 7 2], :fnVal 1/8} {:posVect [7 1 3 5 8 2 4 6], :fnVal 1/8} {:posVect [3 1 7 4 6 8 2 5], :fnVal 1/8} {:posVect [3 4 8 1 5 7 2 6], :fnVal 1/8} {:posVect [4 2 8 6 3 7 5 1], :fnVal 1/8} {:posVect [3 8 4 7 1 5 2 6], :fnVal 1/8} {:posVect [6 1 5 8 3 7 4 2], :fnVal 1/8} {:posVect [3 6 2 7 4 1 8 5], :fnVal 1/8} {:posVect [3 5 8 2 4 7 1 6], :fnVal 1/8} {:posVect [2 3 5 7 1 4 6 8], :fnVal 1/8} {:posVect [5 1 6 8 3 7 4 2], :fnVal 1/8} {:posVect [4 1 7 3 6 8 2 5], :fnVal 1/8} {:posVect [5 8 2 4 7 1 3 6], :fnVal 1/8} {:posVect [5 3 8 4 7 2 6 1], :fnVal 1/8} {:posVect [1 4 8 5 2 7 3 6], :fnVal 1/8} {:posVect [4 6 3 5 7 1 8 2], :fnVal 1/8} {:posVect [1 7 4 8 5 2 6 3], :fnVal 1/8} {:posVect [1 3 5 8 2 4 6 7], :fnVal 1/8} {:posVect [3 5 8 1 4 7 2 6], :fnVal 1/8} {:posVect [2 4 8 3 5 7 1 6], :fnVal 1/8} {:posVect [1 3 5 7 2 4 6 8], :fnVal 1/8} {:posVect [6 2 5 8 4 7 3 1], :fnVal 1/8} {:posVect [2 5 8 1 4 6 3 7], :fnVal 1/8} {:posVect [6 1 3 5 7 8 4 2], :fnVal 1/8} {:posVect [7 1 4 2 5 8 6 3], :fnVal 1/8} {:posVect [8 1 4 2 7 6 3 5], :fnVal 1/8} {:posVect [2 5 8 1 4 7 3 6], :fnVal 1/8} {:posVect [3 1 8 4 5 7 2 6], :fnVal 1/8} {:posVect [6 1 7 4 2 8 5 3], :fnVal 1/8} {:posVect [3 8 2 7 4 6 1 5], :fnVal 1/8} {:posVect [2 8 3 7 4 6 1 5], :fnVal 1/8} {:posVect [6 1 7 5 3 8 4 2], :fnVal 1/8} {:posVect [3 5 7 2 4 6 1 8], :fnVal 1/8} {:posVect [3 5 8 2 4 6 1 7], :fnVal 1/8} {:posVect [7 1 6 4 2 8 5 3], :fnVal 1/8} {:posVect [3 5 8 4 1 6 2 7], :fnVal 1/8} {:posVect [4 1 8 3 5 7 2 6], :fnVal 1/8} {:posVect [8 1 6 4 2 7 5 3], :fnVal 1/8} {:posVect [4 7 2 6 3 1 8 5], :fnVal 1/8} {:posVect [3 7 4 8 2 5 1 6], :fnVal 1/8} {:posVect [7 4 3 1 8 5 2 6], :fnVal 1/8} {:posVect [8 1 3 5 7 2 4 6], :fnVal 1/8} {:posVect [7 1 4 2 8 6 3 5], :fnVal 1/8} {:posVect [6 2 7 4 1 8 5 3], :fnVal 1/8} {:posVect [1 8 4 7 3 6 2 5], :fnVal 1/8} {:posVect [4 7 5 2 1 6 8 3], :fnVal 1/8} {:posVect [1 4 8 5 2 6 3 7], :fnVal 1/8} {:posVect [1 7 4 8 2 5 3 6], :fnVal 1/8} {:posVect [7 3 6 4 1 8 5 2], :fnVal 1/8} {:posVect [6 2 7 5 1 8 4 3], :fnVal 1/8} {:posVect [5 2 8 3 4 7 1 6], :fnVal 1/8} {:posVect [5 3 1 4 6 8 2 7], :fnVal 1/8} {:posVect [6 3 7 4 1 8 5 2], :fnVal 1/8} {:posVect [7 3 6 8 1 4 2 5], :fnVal 1/8} {:posVect [6 2 7 5 3 8 4 1], :fnVal 1/8} {:posVect [2 6 3 7 4 8 1 5], :fnVal 1/8} {:posVect [4 1 7 2 6 8 3 5], :fnVal 1/8} {:posVect [7 5 2 8 6 4 3 1], :fnVal 1/8} {:posVect [4 2 7 6 3 5 8 1], :fnVal 1/8} {:posVect [5 8 1 3 7 2 4 6], :fnVal 1/8} {:posVect [2 7 1 4 5 8 6 3], :fnVal 1/8} {:posVect [1 7 4 6 3 2 8 5], :fnVal 1/4} {:posVect [4 7 3 6 2 5 1 4], :fnVal 1/4} {:posVect [2 8 3 7 5 1 6 4], :fnVal 1/4} {:posVect [5 2 6 8 3 7 4 1], :fnVal 1/4} {:posVect [2 8 4 7 3 6 1 5], :fnVal 1/4} {:posVect [1 7 2 4 6 8 5 3], :fnVal 1/4} {:posVect [6 5 3 1 8 4 2 7], :fnVal 1/4} {:posVect [2 3 8 4 7 1 6 5], :fnVal 1/4} {:posVect [8 5 2 4 6 1 3 7], :fnVal 1/4} {:posVect [2 7 1 8 5 2 6 3], :fnVal 1/4} {:posVect [2 7 3 8 4 5 1 6], :fnVal 1/4} {:posVect [3 7 2 8 5 1 8 6], :fnVal 1/4} {:posVect [2 4 7 1 3 5 2 8], :fnVal 1/4} {:posVect [5 2 8 3 7 3 1 6], :fnVal 1/4} {:posVect [8 5 1 4 6 8 3 7], :fnVal 1/4} {:posVect [7 1 6 5 3 8 4 2], :fnVal 1/4} {:posVect [1 5 8 6 3 7 2 7], :fnVal 1/4} {:posVect [1 7 4 8 3 5 2 6], :fnVal 1/4} {:posVect [4 8 1 8 6 2 7 5], :fnVal 1/4} {:posVect [3 7 2 7 5 1 8 6], :fnVal 1/4}]
+user=> (count (filter #(= (% :fnVal) 0) [{:posVect [3 6 2 7 5 1 8 4], :fnVal 0} {:posVect [5 3 8 4 7 1 6 2], :fnVal 0} {:posVect [4 7 3 8 2 5 1 6], :fnVal 0} {:posVect [3 5 8 4 1 7 2 6], :fnVal 0} {:posVect [5 2 4 6 8 3 1 7], :fnVal 0} {:posVect [3 8 4 7 1 6 2 5], :fnVal 0} {:posVect [4 7 1 8 5 2 6 3], :fnVal 0} {:posVect [5 7 2 4 8 1 3 6], :fnVal 0} {:posVect [1 7 2 4 6 8 3 5], :fnVal 1/8} {:posVect [3 8 7 2 4 6 1 5], :fnVal 1/8} {:posVect [4 2 8 3 5 7 1 6], :fnVal 1/8} {:posVect [1 2 5 8 4 7 3 6], :fnVal 1/8} {:posVect [7 2 4 1 5 8 6 3], :fnVal 1/8} {:posVect [6 2 5 8 3 7 4 1], :fnVal 1/8} {:posVect [2 6 3 7 4 1 8 5], :fnVal 1/8} {:posVect [1 7 4 8 3 5 6 2], :fnVal 1/8} {:posVect [6 3 7 2 8 5 4 1], :fnVal 1/8} {:posVect [5 2 8 6 3 7 4 1], :fnVal 1/8} {:posVect [2 8 6 4 1 3 5 7], :fnVal 1/8} {:posVect [6 3 5 8 4 1 7 2], :fnVal 1/8} {:posVect [7 1 3 5 8 2 4 6], :fnVal 1/8} {:posVect [3 1 7 4 6 8 2 5], :fnVal 1/8} {:posVect [3 4 8 1 5 7 2 6], :fnVal 1/8} {:posVect [4 2 8 6 3 7 5 1], :fnVal 1/8} {:posVect [3 8 4 7 1 5 2 6], :fnVal 1/8} {:posVect [6 1 5 8 3 7 4 2], :fnVal 1/8} {:posVect [3 6 2 7 4 1 8 5], :fnVal 1/8} {:posVect [3 5 8 2 4 7 1 6], :fnVal 1/8} {:posVect [2 3 5 7 1 4 6 8], :fnVal 1/8} {:posVect [5 1 6 8 3 7 4 2], :fnVal 1/8} {:posVect [4 1 7 3 6 8 2 5], :fnVal 1/8} {:posVect [5 8 2 4 7 1 3 6], :fnVal 1/8} {:posVect [5 3 8 4 7 2 6 1], :fnVal 1/8} {:posVect [1 4 8 5 2 7 3 6], :fnVal 1/8} {:posVect [4 6 3 5 7 1 8 2], :fnVal 1/8} {:posVect [1 7 4 8 5 2 6 3], :fnVal 1/8} {:posVect [1 3 5 8 2 4 6 7], :fnVal 1/8} {:posVect [3 5 8 1 4 7 2 6], :fnVal 1/8} {:posVect [2 4 8 3 5 7 1 6], :fnVal 1/8} {:posVect [1 3 5 7 2 4 6 8], :fnVal 1/8} {:posVect [6 2 5 8 4 7 3 1], :fnVal 1/8} {:posVect [2 5 8 1 4 6 3 7], :fnVal 1/8} {:posVect [6 1 3 5 7 8 4 2], :fnVal 1/8} {:posVect [7 1 4 2 5 8 6 3], :fnVal 1/8} {:posVect [8 1 4 2 7 6 3 5], :fnVal 1/8} {:posVect [2 5 8 1 4 7 3 6], :fnVal 1/8} {:posVect [3 1 8 4 5 7 2 6], :fnVal 1/8} {:posVect [6 1 7 4 2 8 5 3], :fnVal 1/8} {:posVect [3 8 2 7 4 6 1 5], :fnVal 1/8} {:posVect [2 8 3 7 4 6 1 5], :fnVal 1/8} {:posVect [6 1 7 5 3 8 4 2], :fnVal 1/8} {:posVect [3 5 7 2 4 6 1 8], :fnVal 1/8} {:posVect [3 5 8 2 4 6 1 7], :fnVal 1/8} {:posVect [7 1 6 4 2 8 5 3], :fnVal 1/8} {:posVect [3 5 8 4 1 6 2 7], :fnVal 1/8} {:posVect [4 1 8 3 5 7 2 6], :fnVal 1/8} {:posVect [8 1 6 4 2 7 5 3], :fnVal 1/8} {:posVect [4 7 2 6 3 1 8 5], :fnVal 1/8} {:posVect [3 7 4 8 2 5 1 6], :fnVal 1/8} {:posVect [7 4 3 1 8 5 2 6], :fnVal 1/8} {:posVect [8 1 3 5 7 2 4 6], :fnVal 1/8} {:posVect [7 1 4 2 8 6 3 5], :fnVal 1/8} {:posVect [6 2 7 4 1 8 5 3], :fnVal 1/8} {:posVect [1 8 4 7 3 6 2 5], :fnVal 1/8} {:posVect [4 7 5 2 1 6 8 3], :fnVal 1/8} {:posVect [1 4 8 5 2 6 3 7], :fnVal 1/8} {:posVect [1 7 4 8 2 5 3 6], :fnVal 1/8} {:posVect [7 3 6 4 1 8 5 2], :fnVal 1/8} {:posVect [6 2 7 5 1 8 4 3], :fnVal 1/8} {:posVect [5 2 8 3 4 7 1 6], :fnVal 1/8} {:posVect [5 3 1 4 6 8 2 7], :fnVal 1/8} {:posVect [6 3 7 4 1 8 5 2], :fnVal 1/8} {:posVect [7 3 6 8 1 4 2 5], :fnVal 1/8} {:posVect [6 2 7 5 3 8 4 1], :fnVal 1/8} {:posVect [2 6 3 7 4 8 1 5], :fnVal 1/8} {:posVect [4 1 7 2 6 8 3 5], :fnVal 1/8} {:posVect [7 5 2 8 6 4 3 1], :fnVal 1/8} {:posVect [4 2 7 6 3 5 8 1], :fnVal 1/8} {:posVect [5 8 1 3 7 2 4 6], :fnVal 1/8} {:posVect [2 7 1 4 5 8 6 3], :fnVal 1/8} {:posVect [1 7 4 6 3 2 8 5], :fnVal 1/4} {:posVect [4 7 3 6 2 5 1 4], :fnVal 1/4} {:posVect [2 8 3 7 5 1 6 4], :fnVal 1/4} {:posVect [5 2 6 8 3 7 4 1], :fnVal 1/4} {:posVect [2 8 4 7 3 6 1 5], :fnVal 1/4} {:posVect [1 7 2 4 6 8 5 3], :fnVal 1/4} {:posVect [6 5 3 1 8 4 2 7], :fnVal 1/4} {:posVect [2 3 8 4 7 1 6 5], :fnVal 1/4} {:posVect [8 5 2 4 6 1 3 7], :fnVal 1/4} {:posVect [2 7 1 8 5 2 6 3], :fnVal 1/4} {:posVect [2 7 3 8 4 5 1 6], :fnVal 1/4} {:posVect [3 7 2 8 5 1 8 6], :fnVal 1/4} {:posVect [2 4 7 1 3 5 2 8], :fnVal 1/4} {:posVect [5 2 8 3 7 3 1 6], :fnVal 1/4} {:posVect [8 5 1 4 6 8 3 7], :fnVal 1/4} {:posVect [7 1 6 5 3 8 4 2], :fnVal 1/4} {:posVect [1 5 8 6 3 7 2 7], :fnVal 1/4} {:posVect [1 7 4 8 3 5 2 6], :fnVal 1/4} {:posVect [4 8 1 8 6 2 7 5], :fnVal 1/4} {:posVect [3 7 2 7 5 1 8 6], :fnVal 1/4}]))
+8   ;Cantidad de soluciones obtenidas
+
+user=> (queensSolveByHS 8 100 0.7 0.4 2000)
+[{:posVect [4 8 1 5 7 2 6 3], :fnVal 0} {:posVect [4 2 7 3 6 8 1 5], :fnVal 0} {:posVect [4 8 1 3 6 2 7 5], :fnVal 0} {:posVect [5 2 4 7 3 8 6 1], :fnVal 0} {:posVect [3 6 2 5 8 1 7 4], :fnVal 0} {:posVect [5 3 1 6 8 2 4 7], :fnVal 0} {:posVect [7 4 2 5 8 1 3 6], :fnVal 0} {:posVect [5 8 4 1 7 2 6 3], :fnVal 0} {:posVect [3 5 8 4 1 7 2 6], :fnVal 0} {:posVect [6 3 7 2 4 8 1 5], :fnVal 0} {:posVect [4 2 7 3 6 8 5 1], :fnVal 0} {:posVect [6 2 7 1 3 5 8 4], :fnVal 0} {:posVect [6 1 3 5 8 2 4 7], :fnVal 1/8} {:posVect [5 8 1 4 7 3 6 2], :fnVal 1/8} {:posVect [7 1 3 5 8 2 4 6], :fnVal 1/8} {:posVect [2 3 8 6 4 1 7 5], :fnVal 1/8} {:posVect [5 8 1 4 7 2 6 3], :fnVal 1/8} {:posVect [3 8 2 5 6 1 7 4], :fnVal 1/8} {:posVect [3 7 4 2 8 5 1 6], :fnVal 1/8} {:posVect [3 4 8 5 2 6 1 7], :fnVal 1/8} {:posVect [7 5 2 4 6 8 3 1], :fnVal 1/8} {:posVect [5 8 1 3 6 2 7 4], :fnVal 1/8} {:posVect [3 6 4 1 8 5 2 7], :fnVal 1/8} {:posVect [6 3 1 5 8 2 4 7], :fnVal 1/8} {:posVect [4 1 7 3 6 2 5 8], :fnVal 1/8} {:posVect [5 1 4 7 3 6 2 8], :fnVal 1/8} {:posVect [7 2 4 6 1 8 5 3], :fnVal 1/8} {:posVect [5 2 7 3 6 8 1 4], :fnVal 1/8} {:posVect [4 1 7 2 6 8 3 5], :fnVal 1/8} {:posVect [6 3 1 5 7 2 4 8], :fnVal 1/8} {:posVect [5 7 1 6 8 2 4 3], :fnVal 1/8} {:posVect [3 8 4 1 7 5 2 6], :fnVal 1/8} {:posVect [7 1 3 6 8 5 2 4], :fnVal 1/8} {:posVect [7 2 3 5 8 1 4 6], :fnVal 1/8} {:posVect [5 1 6 3 7 2 4 8], :fnVal 1/8} {:posVect [5 7 4 1 8 2 6 3], :fnVal 1/8} {:posVect [4 1 7 3 6 8 2 5], :fnVal 1/8} {:posVect [6 1 3 7 4 8 5 2], :fnVal 1/8} {:posVect [8 5 2 4 7 1 3 6], :fnVal 1/8} {:posVect [2 4 8 6 3 1 7 5], :fnVal 1/8} {:posVect [8 3 5 7 2 1 6 4], :fnVal 1/8} {:posVect [5 3 1 6 7 2 4 8], :fnVal 1/8} {:posVect [3 7 4 1 8 5 2 6], :fnVal 1/8} {:posVect [3 5 8 4 1 6 2 7], :fnVal 1/8} {:posVect [1 4 7 3 8 2 5 6], :fnVal 1/8} {:posVect [5 1 4 6 3 7 2 8], :fnVal 1/8} {:posVect [2 7 4 1 8 5 3 6], :fnVal 1/8} {:posVect [8 1 3 5 7 2 4 6], :fnVal 1/8} {:posVect [6 4 1 5 8 2 3 7], :fnVal 1/8} {:posVect [5 1 4 7 3 8 6 2], :fnVal 1/8} {:posVect [4 8 3 5 7 2 6 1], :fnVal 1/8} {:posVect [4 7 5 8 1 3 6 2], :fnVal 1/8} {:posVect [1 4 6 3 7 2 8 5], :fnVal 1/8} {:posVect [6 5 1 4 7 3 8 2], :fnVal 1/8} {:posVect [6 8 1 5 7 2 4 3], :fnVal 1/8} {:posVect [4 1 7 2 6 3 5 8], :fnVal 1/8} {:posVect [3 8 2 4 6 1 7 5], :fnVal 1/8} {:posVect [4 2 8 3 5 7 1 6], :fnVal 1/8} {:posVect [4 8 3 5 7 1 6 2], :fnVal 1/8} {:posVect [6 5 2 8 3 7 4 1], :fnVal 1/8} {:posVect [8 2 5 7 3 1 6 4], :fnVal 1/8} {:posVect [6 3 7 2 5 8 1 4], :fnVal 1/8} {:posVect [1 6 4 2 8 5 3 7], :fnVal 1/8} {:posVect [2 6 3 7 4 8 1 5], :fnVal 1/8} {:posVect [8 2 4 6 1 7 5 3], :fnVal 1/8} {:posVect [1 3 8 6 4 2 7 5], :fnVal 1/8} {:posVect [3 5 2 8 4 7 1 6], :fnVal 1/8} {:posVect [4 7 1 6 5 2 8 3], :fnVal 1/8} {:posVect [3 6 4 1 7 5 2 8], :fnVal 1/8} {:posVect [3 7 2 4 5 1 8 6], :fnVal 1/8} {:posVect [6 2 7 5 3 8 4 1], :fnVal 1/8} {:posVect [3 1 7 4 6 8 2 5], :fnVal 1/8} {:posVect [2 4 6 1 3 5 7 8], :fnVal 1/8} {:posVect [4 8 3 1 7 5 2 6], :fnVal 1/8} {:posVect [4 6 8 3 1 7 2 5], :fnVal 1/8} {:posVect [7 3 4 6 1 5 2 8], :fnVal 1/8} {:posVect [1 4 7 3 6 2 8 5], :fnVal 1/8} {:posVect [1 5 7 2 6 3 8 4], :fnVal 1/8} {:posVect [5 3 6 4 2 8 1 7], :fnVal 1/8} {:posVect [4 8 1 5 2 6 3 7], :fnVal 1/8} {:posVect [2 5 8 6 3 1 7 4], :fnVal 1/8} {:posVect [7 3 6 2 5 8 1 4], :fnVal 1/8} {:posVect [7 1 3 6 8 4 2 5], :fnVal 1/4} {:posVect [6 8 5 2 8 3 7 4], :fnVal 1/4} {:posVect [5 1 7 3 6 8 2 4], :fnVal 1/4} {:posVect [2 7 5 3 1 4 8 6], :fnVal 1/4} {:posVect [5 2 4 6 8 3 1 4], :fnVal 1/4} {:posVect [4 2 6 3 7 8 1 5], :fnVal 1/4} {:posVect [5 7 1 4 6 3 8 2], :fnVal 1/4} {:posVect [5 2 2 6 8 3 1 4], :fnVal 1/4} {:posVect [5 8 6 3 1 7 4 2], :fnVal 1/4} {:posVect [4 7 1 3 5 2 8 3], :fnVal 1/4} {:posVect [5 8 1 4 7 3 6 3], :fnVal 1/4} {:posVect [4 8 1 3 6 2 7 1], :fnVal 1/4} {:posVect [4 8 1 5 6 2 7 3], :fnVal 1/4} {:posVect [5 2 4 6 8 3 1 6], :fnVal 1/4} {:posVect [7 1 3 5 8 1 4 6], :fnVal 1/4} {:posVect [5 6 1 4 7 3 8 2], :fnVal 1/4} {:posVect [5 2 6 3 6 8 1 4], :fnVal 1/4} {:posVect [5 2 4 6 8 3 1 3], :fnVal 1/4}]
+user=> (count (filter #(= (% :fnVal) 0) [{:posVect [4 8 1 5 7 2 6 3], :fnVal 0} {:posVect [4 2 7 3 6 8 1 5], :fnVal 0} {:posVect [4 8 1 3 6 2 7 5], :fnVal 0} {:posVect [5 2 4 7 3 8 6 1], :fnVal 0} {:posVect [3 6 2 5 8 1 7 4], :fnVal 0} {:posVect [5 3 1 6 8 2 4 7], :fnVal 0} {:posVect [7 4 2 5 8 1 3 6], :fnVal 0} {:posVect [5 8 4 1 7 2 6 3], :fnVal 0} {:posVect [3 5 8 4 1 7 2 6], :fnVal 0} {:posVect [6 3 7 2 4 8 1 5], :fnVal 0} {:posVect [4 2 7 3 6 8 5 1], :fnVal 0} {:posVect [6 2 7 1 3 5 8 4], :fnVal 0} {:posVect [6 1 3 5 8 2 4 7], :fnVal 1/8} {:posVect [5 8 1 4 7 3 6 2], :fnVal 1/8} {:posVect [7 1 3 5 8 2 4 6], :fnVal 1/8} {:posVect [2 3 8 6 4 1 7 5], :fnVal 1/8} {:posVect [5 8 1 4 7 2 6 3], :fnVal 1/8} {:posVect [3 8 2 5 6 1 7 4], :fnVal 1/8} {:posVect [3 7 4 2 8 5 1 6], :fnVal 1/8} {:posVect [3 4 8 5 2 6 1 7], :fnVal 1/8} {:posVect [7 5 2 4 6 8 3 1], :fnVal 1/8} {:posVect [5 8 1 3 6 2 7 4], :fnVal 1/8} {:posVect [3 6 4 1 8 5 2 7], :fnVal 1/8} {:posVect [6 3 1 5 8 2 4 7], :fnVal 1/8} {:posVect [4 1 7 3 6 2 5 8], :fnVal 1/8} {:posVect [5 1 4 7 3 6 2 8], :fnVal 1/8} {:posVect [7 2 4 6 1 8 5 3], :fnVal 1/8} {:posVect [5 2 7 3 6 8 1 4], :fnVal 1/8} {:posVect [4 1 7 2 6 8 3 5], :fnVal 1/8} {:posVect [6 3 1 5 7 2 4 8], :fnVal 1/8} {:posVect [5 7 1 6 8 2 4 3], :fnVal 1/8} {:posVect [3 8 4 1 7 5 2 6], :fnVal 1/8} {:posVect [7 1 3 6 8 5 2 4], :fnVal 1/8} {:posVect [7 2 3 5 8 1 4 6], :fnVal 1/8} {:posVect [5 1 6 3 7 2 4 8], :fnVal 1/8} {:posVect [5 7 4 1 8 2 6 3], :fnVal 1/8} {:posVect [4 1 7 3 6 8 2 5], :fnVal 1/8} {:posVect [6 1 3 7 4 8 5 2], :fnVal 1/8} {:posVect [8 5 2 4 7 1 3 6], :fnVal 1/8} {:posVect [2 4 8 6 3 1 7 5], :fnVal 1/8} {:posVect [8 3 5 7 2 1 6 4], :fnVal 1/8} {:posVect [5 3 1 6 7 2 4 8], :fnVal 1/8} {:posVect [3 7 4 1 8 5 2 6], :fnVal 1/8} {:posVect [3 5 8 4 1 6 2 7], :fnVal 1/8} {:posVect [1 4 7 3 8 2 5 6], :fnVal 1/8} {:posVect [5 1 4 6 3 7 2 8], :fnVal 1/8} {:posVect [2 7 4 1 8 5 3 6], :fnVal 1/8} {:posVect [8 1 3 5 7 2 4 6], :fnVal 1/8} {:posVect [6 4 1 5 8 2 3 7], :fnVal 1/8} {:posVect [5 1 4 7 3 8 6 2], :fnVal 1/8} {:posVect [4 8 3 5 7 2 6 1], :fnVal 1/8} {:posVect [4 7 5 8 1 3 6 2], :fnVal 1/8} {:posVect [1 4 6 3 7 2 8 5], :fnVal 1/8} {:posVect [6 5 1 4 7 3 8 2], :fnVal 1/8} {:posVect [6 8 1 5 7 2 4 3], :fnVal 1/8} {:posVect [4 1 7 2 6 3 5 8], :fnVal 1/8} {:posVect [3 8 2 4 6 1 7 5], :fnVal 1/8} {:posVect [4 2 8 3 5 7 1 6], :fnVal 1/8} {:posVect [4 8 3 5 7 1 6 2], :fnVal 1/8} {:posVect [6 5 2 8 3 7 4 1], :fnVal 1/8} {:posVect [8 2 5 7 3 1 6 4], :fnVal 1/8} {:posVect [6 3 7 2 5 8 1 4], :fnVal 1/8} {:posVect [1 6 4 2 8 5 3 7], :fnVal 1/8} {:posVect [2 6 3 7 4 8 1 5], :fnVal 1/8} {:posVect [8 2 4 6 1 7 5 3], :fnVal 1/8} {:posVect [1 3 8 6 4 2 7 5], :fnVal 1/8} {:posVect [3 5 2 8 4 7 1 6], :fnVal 1/8} {:posVect [4 7 1 6 5 2 8 3], :fnVal 1/8} {:posVect [3 6 4 1 7 5 2 8], :fnVal 1/8} {:posVect [3 7 2 4 5 1 8 6], :fnVal 1/8} {:posVect [6 2 7 5 3 8 4 1], :fnVal 1/8} {:posVect [3 1 7 4 6 8 2 5], :fnVal 1/8} {:posVect [2 4 6 1 3 5 7 8], :fnVal 1/8} {:posVect [4 8 3 1 7 5 2 6], :fnVal 1/8} {:posVect [4 6 8 3 1 7 2 5], :fnVal 1/8} {:posVect [7 3 4 6 1 5 2 8], :fnVal 1/8} {:posVect [1 4 7 3 6 2 8 5], :fnVal 1/8} {:posVect [1 5 7 2 6 3 8 4], :fnVal 1/8} {:posVect [5 3 6 4 2 8 1 7], :fnVal 1/8} {:posVect [4 8 1 5 2 6 3 7], :fnVal 1/8} {:posVect [2 5 8 6 3 1 7 4], :fnVal 1/8} {:posVect [7 3 6 2 5 8 1 4], :fnVal 1/8} {:posVect [7 1 3 6 8 4 2 5], :fnVal 1/4} {:posVect [6 8 5 2 8 3 7 4], :fnVal 1/4} {:posVect [5 1 7 3 6 8 2 4], :fnVal 1/4} {:posVect [2 7 5 3 1 4 8 6], :fnVal 1/4} {:posVect [5 2 4 6 8 3 1 4], :fnVal 1/4} {:posVect [4 2 6 3 7 8 1 5], :fnVal 1/4} {:posVect [5 7 1 4 6 3 8 2], :fnVal 1/4} {:posVect [5 2 2 6 8 3 1 4], :fnVal 1/4} {:posVect [5 8 6 3 1 7 4 2], :fnVal 1/4} {:posVect [4 7 1 3 5 2 8 3], :fnVal 1/4} {:posVect [5 8 1 4 7 3 6 3], :fnVal 1/4} {:posVect [4 8 1 3 6 2 7 1], :fnVal 1/4} {:posVect [4 8 1 5 6 2 7 3], :fnVal 1/4} {:posVect [5 2 4 6 8 3 1 6], :fnVal 1/4} {:posVect [7 1 3 5 8 1 4 6], :fnVal 1/4} {:posVect [5 6 1 4 7 3 8 2], :fnVal 1/4} {:posVect [5 2 6 3 6 8 1 4], :fnVal 1/4} {:posVect [5 2 4 6 8 3 1 3], :fnVal 1/4}]))
+12
+
+user=> user=> user=> (queensSolveByHS 8 100 0.7 0.4 2000)
+[{:posVect [3 6 2 7 5 1 8 4], :fnVal 0} {:posVect [7 4 2 8 6 1 3 5], :fnVal 0} {:posVect [1 5 8 6 3 7 2 4], :fnVal 0} {:posVect [5 7 1 4 2 8 6 3], :fnVal 0} {:posVect [6 8 2 4 1 7 5 3], :fnVal 0} {:posVect [3 6 8 1 4 7 5 2], :fnVal 0} {:posVect [4 6 8 3 1 7 5 2], :fnVal 0} {:posVect [2 5 7 1 3 8 6 4], :fnVal 0} {:posVect [6 3 1 8 5 2 4 7], :fnVal 0} {:posVect [1 7 5 8 2 4 6 3], :fnVal 0} {:posVect [6 4 2 8 5 7 1 3], :fnVal 0} {:posVect [6 3 1 7 5 8 2 4], :fnVal 0} {:posVect [3 5 7 1 4 2 8 6], :fnVal 0} {:posVect [2 5 7 4 1 8 6 3], :fnVal 0} {:posVect [2 7 5 8 1 4 6 3], :fnVal 0} {:posVect [6 3 7 1 4 2 5 8], :fnVal 1/8} {:posVect [1 5 7 2 4 8 6 3], :fnVal 1/8} {:posVect [6 2 3 7 4 8 1 5], :fnVal 1/8} {:posVect [8 4 2 6 3 1 7 5], :fnVal 1/8} {:posVect [6 1 3 7 5 8 2 4], :fnVal 1/8} {:posVect [6 1 4 7 3 8 2 5], :fnVal 1/8} {:posVect [8 4 2 7 6 1 3 5], :fnVal 1/8} {:posVect [6 3 1 4 7 8 2 5], :fnVal 1/8} {:posVect [5 7 1 3 6 2 4 8], :fnVal 1/8} {:posVect [7 4 1 8 5 3 6 2], :fnVal 1/8} {:posVect [3 5 7 2 4 6 8 1], :fnVal 1/8} {:posVect [6 4 7 3 8 2 5 1], :fnVal 1/8} {:posVect [3 6 2 7 4 1 8 5], :fnVal 1/8} {:posVect [6 4 1 7 5 3 8 2], :fnVal 1/8} {:posVect [7 4 1 3 6 8 2 5], :fnVal 1/8} {:posVect [2 6 7 1 4 8 5 3], :fnVal 1/8} {:posVect [7 4 1 8 5 2 6 3], :fnVal 1/8} {:posVect [6 4 1 8 5 2 7 3], :fnVal 1/8} {:posVect [5 7 2 4 6 1 3 8], :fnVal 1/8} {:posVect [7 5 1 3 6 8 2 4], :fnVal 1/8} {:posVect [3 5 8 1 4 6 7 2], :fnVal 1/8} {:posVect [8 5 1 4 7 3 6 2], :fnVal 1/8} {:posVect [8 6 5 3 1 7 4 2], :fnVal 1/8} {:posVect [6 4 2 7 5 3 8 1], :fnVal 1/8} {:posVect [5 8 2 7 6 3 1 4], :fnVal 1/8} {:posVect [6 5 1 8 4 2 7 3], :fnVal 1/8} {:posVect [8 5 2 6 3 7 1 4], :fnVal 1/8} {:posVect [7 4 2 8 5 1 3 6], :fnVal 1/8} {:posVect [6 8 2 7 5 3 1 4], :fnVal 1/8} {:posVect [1 4 7 3 8 5 2 6], :fnVal 1/8} {:posVect [6 3 2 7 5 8 1 4], :fnVal 1/8} {:posVect [1 5 7 2 3 8 6 4], :fnVal 1/8} {:posVect [7 3 2 8 5 1 4 6], :fnVal 1/8} {:posVect [2 5 7 1 4 8 6 3], :fnVal 1/8} {:posVect [8 4 2 7 5 1 3 6], :fnVal 1/8} {:posVect [2 6 3 7 4 1 8 5], :fnVal 1/8} {:posVect [3 5 8 4 1 7 6 2], :fnVal 1/8} {:posVect [6 3 5 8 1 7 4 2], :fnVal 1/8} {:posVect [8 5 2 6 3 1 7 4], :fnVal 1/8} {:posVect [4 2 5 8 1 7 3 6], :fnVal 1/8} {:posVect [8 5 1 4 7 2 6 3], :fnVal 1/8} {:posVect [6 8 5 1 3 7 2 4], :fnVal 1/8} {:posVect [6 8 3 1 4 7 5 2], :fnVal 1/8} {:posVect [6 3 1 7 4 2 5 8], :fnVal 1/8} {:posVect [6 3 1 7 4 8 2 5], :fnVal 1/8} {:posVect [6 3 7 4 8 2 5 1], :fnVal 1/8} {:posVect [3 6 8 2 5 7 4 1], :fnVal 1/8} {:posVect [8 3 1 7 5 2 6 4], :fnVal 1/8} {:posVect [4 7 1 3 6 2 5 8], :fnVal 1/8} {:posVect [6 8 3 7 4 2 1 5], :fnVal 1/8} {:posVect [6 7 2 4 1 8 5 3], :fnVal 1/8} {:posVect [1 4 7 3 6 8 2 5], :fnVal 1/8} {:posVect [2 8 5 7 1 3 6 4], :fnVal 1/8} {:posVect [7 5 1 6 4 2 8 3], :fnVal 1/8} {:posVect [7 6 1 3 5 8 2 4], :fnVal 1/8} {:posVect [8 6 1 3 5 7 2 4], :fnVal 1/8} {:posVect [5 8 1 4 2 7 6 3], :fnVal 1/8} {:posVect [7 2 4 6 8 3 5 1], :fnVal 1/8} {:posVect [6 4 1 8 5 7 2 3], :fnVal 1/8} {:posVect [2 4 7 3 8 6 1 5], :fnVal 1/8} {:posVect [1 5 7 3 6 8 2 4], :fnVal 1/8} {:posVect [8 4 2 7 3 6 1 5], :fnVal 1/8} {:posVect [4 7 1 5 2 8 6 3], :fnVal 1/8} {:posVect [8 4 1 7 5 2 6 3], :fnVal 1/8} {:posVect [8 5 3 6 2 7 1 4], :fnVal 1/8} {:posVect [5 2 8 3 7 4 6 1], :fnVal 1/8} {:posVect [6 4 1 8 5 3 2 7], :fnVal 1/8} {:posVect [3 6 8 4 1 7 5 2], :fnVal 1/8} {:posVect [1 3 7 4 8 5 2 6], :fnVal 1/8} {:posVect [5 3 8 4 7 2 6 1], :fnVal 1/8} {:posVect [8 3 1 6 5 2 4 7], :fnVal 1/8} {:posVect [4 7 2 6 3 1 8 5], :fnVal 1/8} {:posVect [4 7 1 2 6 8 3 5], :fnVal 1/8} {:posVect [5 8 6 1 3 7 2 4], :fnVal 1/8} {:posVect [4 6 2 5 7 1 3 8], :fnVal 1/8} {:posVect [5 8 1 3 6 7 2 4], :fnVal 1/8} {:posVect [8 7 5 3 1 6 4 2], :fnVal 1/8} {:posVect [1 4 8 3 5 7 2 6], :fnVal 1/8} {:posVect [3 6 8 4 2 7 5 1], :fnVal 1/8} {:posVect [7 1 3 6 2 5 8 4], :fnVal 1/8} {:posVect [4 8 1 3 7 6 2 5], :fnVal 1/8} {:posVect [3 6 7 2 4 1 8 5], :fnVal 1/8} {:posVect [6 2 1 7 4 8 3 5], :fnVal 1/8} {:posVect [6 4 7 1 3 2 5 8], :fnVal 1/4} {:posVect [6 1 5 7 8 3 2 4], :fnVal 1/4}]
+user=> (count (filter #(= (% :fnVal) 0) [{:posVect [3 6 2 7 5 1 8 4], :fnVal 0} {:posVect [7 4 2 8 6 1 3 5], :fnVal 0} {:posVect [1 5 8 6 3 7 2 4], :fnVal 0} {:posVect [5 7 1 4 2 8 6 3], :fnVal 0} {:posVect [6 8 2 4 1 7 5 3], :fnVal 0} {:posVect [3 6 8 1 4 7 5 2], :fnVal 0} {:posVect [4 6 8 3 1 7 5 2], :fnVal 0} {:posVect [2 5 7 1 3 8 6 4], :fnVal 0} {:posVect [6 3 1 8 5 2 4 7], :fnVal 0} {:posVect [1 7 5 8 2 4 6 3], :fnVal 0} {:posVect [6 4 2 8 5 7 1 3], :fnVal 0} {:posVect [6 3 1 7 5 8 2 4], :fnVal 0} {:posVect [3 5 7 1 4 2 8 6], :fnVal 0} {:posVect [2 5 7 4 1 8 6 3], :fnVal 0} {:posVect [2 7 5 8 1 4 6 3], :fnVal 0} {:posVect [6 3 7 1 4 2 5 8], :fnVal 1/8} {:posVect [1 5 7 2 4 8 6 3], :fnVal 1/8} {:posVect [6 2 3 7 4 8 1 5], :fnVal 1/8} {:posVect [8 4 2 6 3 1 7 5], :fnVal 1/8} {:posVect [6 1 3 7 5 8 2 4], :fnVal 1/8} {:posVect [6 1 4 7 3 8 2 5], :fnVal 1/8} {:posVect [8 4 2 7 6 1 3 5], :fnVal 1/8} {:posVect [6 3 1 4 7 8 2 5], :fnVal 1/8} {:posVect [5 7 1 3 6 2 4 8], :fnVal 1/8} {:posVect [7 4 1 8 5 3 6 2], :fnVal 1/8} {:posVect [3 5 7 2 4 6 8 1], :fnVal 1/8} {:posVect [6 4 7 3 8 2 5 1], :fnVal 1/8} {:posVect [3 6 2 7 4 1 8 5], :fnVal 1/8} {:posVect [6 4 1 7 5 3 8 2], :fnVal 1/8} {:posVect [7 4 1 3 6 8 2 5], :fnVal 1/8} {:posVect [2 6 7 1 4 8 5 3], :fnVal 1/8} {:posVect [7 4 1 8 5 2 6 3], :fnVal 1/8} {:posVect [6 4 1 8 5 2 7 3], :fnVal 1/8} {:posVect [5 7 2 4 6 1 3 8], :fnVal 1/8} {:posVect [7 5 1 3 6 8 2 4], :fnVal 1/8} {:posVect [3 5 8 1 4 6 7 2], :fnVal 1/8} {:posVect [8 5 1 4 7 3 6 2], :fnVal 1/8} {:posVect [8 6 5 3 1 7 4 2], :fnVal 1/8} {:posVect [6 4 2 7 5 3 8 1], :fnVal 1/8} {:posVect [5 8 2 7 6 3 1 4], :fnVal 1/8} {:posVect [6 5 1 8 4 2 7 3], :fnVal 1/8} {:posVect [8 5 2 6 3 7 1 4], :fnVal 1/8} {:posVect [7 4 2 8 5 1 3 6], :fnVal 1/8} {:posVect [6 8 2 7 5 3 1 4], :fnVal 1/8} {:posVect [1 4 7 3 8 5 2 6], :fnVal 1/8} {:posVect [6 3 2 7 5 8 1 4], :fnVal 1/8} {:posVect [1 5 7 2 3 8 6 4], :fnVal 1/8} {:posVect [7 3 2 8 5 1 4 6], :fnVal 1/8} {:posVect [2 5 7 1 4 8 6 3], :fnVal 1/8} {:posVect [8 4 2 7 5 1 3 6], :fnVal 1/8} {:posVect [2 6 3 7 4 1 8 5], :fnVal 1/8} {:posVect [3 5 8 4 1 7 6 2], :fnVal 1/8} {:posVect [6 3 5 8 1 7 4 2], :fnVal 1/8} {:posVect [8 5 2 6 3 1 7 4], :fnVal 1/8} {:posVect [4 2 5 8 1 7 3 6], :fnVal 1/8} {:posVect [8 5 1 4 7 2 6 3], :fnVal 1/8} {:posVect [6 8 5 1 3 7 2 4], :fnVal 1/8} {:posVect [6 8 3 1 4 7 5 2], :fnVal 1/8} {:posVect [6 3 1 7 4 2 5 8], :fnVal 1/8} {:posVect [6 3 1 7 4 8 2 5], :fnVal 1/8} {:posVect [6 3 7 4 8 2 5 1], :fnVal 1/8} {:posVect [3 6 8 2 5 7 4 1], :fnVal 1/8} {:posVect [8 3 1 7 5 2 6 4], :fnVal 1/8} {:posVect [4 7 1 3 6 2 5 8], :fnVal 1/8} {:posVect [6 8 3 7 4 2 1 5], :fnVal 1/8} {:posVect [6 7 2 4 1 8 5 3], :fnVal 1/8} {:posVect [1 4 7 3 6 8 2 5], :fnVal 1/8} {:posVect [2 8 5 7 1 3 6 4], :fnVal 1/8} {:posVect [7 5 1 6 4 2 8 3], :fnVal 1/8} {:posVect [7 6 1 3 5 8 2 4], :fnVal 1/8} {:posVect [8 6 1 3 5 7 2 4], :fnVal 1/8} {:posVect [5 8 1 4 2 7 6 3], :fnVal 1/8} {:posVect [7 2 4 6 8 3 5 1], :fnVal 1/8} {:posVect [6 4 1 8 5 7 2 3], :fnVal 1/8} {:posVect [2 4 7 3 8 6 1 5], :fnVal 1/8} {:posVect [1 5 7 3 6 8 2 4], :fnVal 1/8} {:posVect [8 4 2 7 3 6 1 5], :fnVal 1/8} {:posVect [4 7 1 5 2 8 6 3], :fnVal 1/8} {:posVect [8 4 1 7 5 2 6 3], :fnVal 1/8} {:posVect [8 5 3 6 2 7 1 4], :fnVal 1/8} {:posVect [5 2 8 3 7 4 6 1], :fnVal 1/8} {:posVect [6 4 1 8 5 3 2 7], :fnVal 1/8} {:posVect [3 6 8 4 1 7 5 2], :fnVal 1/8} {:posVect [1 3 7 4 8 5 2 6], :fnVal 1/8} {:posVect [5 3 8 4 7 2 6 1], :fnVal 1/8} {:posVect [8 3 1 6 5 2 4 7], :fnVal 1/8} {:posVect [4 7 2 6 3 1 8 5], :fnVal 1/8} {:posVect [4 7 1 2 6 8 3 5], :fnVal 1/8} {:posVect [5 8 6 1 3 7 2 4], :fnVal 1/8} {:posVect [4 6 2 5 7 1 3 8], :fnVal 1/8} {:posVect [5 8 1 3 6 7 2 4], :fnVal 1/8} {:posVect [8 7 5 3 1 6 4 2], :fnVal 1/8} {:posVect [1 4 8 3 5 7 2 6], :fnVal 1/8} {:posVect [3 6 8 4 2 7 5 1], :fnVal 1/8} {:posVect [7 1 3 6 2 5 8 4], :fnVal 1/8} {:posVect [4 8 1 3 7 6 2 5], :fnVal 1/8} {:posVect [3 6 7 2 4 1 8 5], :fnVal 1/8} {:posVect [6 2 1 7 4 8 3 5], :fnVal 1/8} {:posVect [6 4 7 1 3 2 5 8], :fnVal 1/4} {:posVect [6 1 5 7 8 3 2 4], :fnVal 1/4}]))
+15  ;Máxima cantidad de soluciones obtenidas
 
 
 
 
-
-
-
-
-(defn subvector
-    ([vect size]
-        (subvector vect size 0 []))
-    ([vect size vectIndex vectOut]
-        (if (< vectIndex size)
-            (recur vect size (inc vectIndex) (conj vectOut (get vect vectIndex)))
-            vectOut)))

@@ -3,8 +3,7 @@
 ;- Ejecutar un script que reciba parámetros.
 ;- En clj. leer y escribir archivos.
 
-;Triangulo relleno SOLO DE EJEMPLO
-
+;Triangulo relleno SOLO DE EJEMPLO, se copió el código tal cual del archivo clase_2013_11_11.clj
 (require '[clojure.string :as ss])
 
 (defn caracteres 

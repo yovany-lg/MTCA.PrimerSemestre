@@ -1,20 +1,11 @@
 ;¡¡¡¡IMPORTANTE!!!!: Siempre declarar el tratamiento para listas vacías...
 ;De lo contrario se puede ciclar esta cosa del demonio y sin avisar... XD
 
-;(map str [1 2 3])
-;Función Anónima
-;1
-;(fn [x] (+ 1 x))
-;2
-;#(+ 1 %1)
-;Filter
-;(filter #(> %1 10)
-;    [5 11 9 10])
-;Reduce
-;(reduce * [1 2 3 4])
+;------------Código de tareas
 
 ;Función Mayor
 (defn greater
+    "Devuelve el mayor en la comparación de dos parámetros"
     ([] nil)
     ([n] n)
     ([n1 n2]
@@ -28,10 +19,9 @@
                     n1
                     n2)))))
 
-(reduce greater [5 8 10])
-
 ;Invertir una lista
 (defn invertList
+    "Función que devuelve una lista en orden invertido"
     ([li]
         (if (empty? li)
             '()
@@ -40,8 +30,10 @@
         (if (empty? li)
             lifinal
             (recur (rest li) (cons (first li) lifinal)))))
+
 ;Mi definición de Map
 (defn myMap
+    "Mi definición de la función Map"
     ([f li]
         (if (empty? li )
             '()
@@ -55,6 +47,7 @@
 
 ;Mi definición de Filter
 (defn myFilter
+    "Mi definición de la función filter"
     ([f li]
         (if (empty? li)
             '()
@@ -72,6 +65,7 @@
 
 ;Se retorna una lista libre de apariciones del elemento
 (defn itemDistinct
+    "Devuelve una lista libre de apariciones del elemento en cuestión"
     [item li]
     (if (empty? li)
         '()
@@ -79,6 +73,7 @@
 
 ;Función que determina el número de apariciones del elemento en una lista
 (defn itemCount
+    "Función que determina el número de apariciones del elemento en una lista"
     [item li]
     (if (empty? li)
         0
@@ -86,6 +81,7 @@
 
 ;Concatena la primera lista con la segunda. Aún no se para que la generé... jeje
 (defn listConcat    
+    "Concatena la primera lista con la segunda. Aún no sé para qué la generé... jeje"
     ([li1 li2]
         (if (empty? li1)
             (if (empty? li2)
@@ -100,15 +96,17 @@
             (recur (rest li1) li2 (conj liOut (first li1))))))
 
 (defn pow [x y] 
+    "Definición de Potencia, para no lidiar con la librería Math"
     (Math/pow x y))
 
 (defn sqrt [x] 
+    "Definición de raíz cuadrada, para no lidiar con la librería Math"
     (Math/sqrt x))
 
 ;Funciones mas avanzadas...
-
 ;Promedio
 (defn average 
+    "Devuelve el promedio de una lista de números"
     ([li]
         (if (empty? li)
             0
@@ -125,6 +123,7 @@
 
 ;Frecuencia
 (defn freq
+    "Devuelve una lista de vectores que contienen los elementos (de la lista) y sus apariciones"
     ([li]
         (if (empty? li)
             '()
@@ -143,6 +142,7 @@
 
 ;desviacion estandard
 (defn stDeviation
+    "Obtiene la desviación estándar de una lista de números"
     ([li] 
         (stDeviation li (average li) '()))
     ([li avg liOut]
@@ -152,12 +152,33 @@
             (recur (rest li) avg (cons (pow (- (first li) avg) 2) liOut)))))
 
 (defn ageDeviation
+    "Obtiene la desviación estándar de la edad a partir de una lista 
+    de hash-maps, ejemplo: '({:nombre yovany :edad 28} {:nombre mauricio :edad 26})"
     [li]
     ;Obtener edades y filtrar los elementos que sean nulos, 
     ;ocurre un error en el cálculo de la desviación estándar si hay un elemento nulo en la lista
     (stDeviation (myFilter (fn [x] (not (= x nil))) (myMap (fn [x] (x :edad)) li))))
+
 ;'({:nombre "yovany" :edad 28} {:nombre "mauricio" :edad 26})
 
 ;mediana
 
 ;moda
+
+;(reduce greater [5 8 10])
+
+
+;(map str [1 2 3])
+;Función Anónima
+;1
+;(fn [x] (+ 1 x))
+;2
+;#(+ 1 %1)
+;Filter
+;(filter #(> %1 10)
+;    [5 11 9 10])
+;Reduce
+;(reduce * [1 2 3 4])
+
+
+
