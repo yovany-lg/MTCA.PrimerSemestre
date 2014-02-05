@@ -182,7 +182,7 @@
     (doall 
       (run* [q]
         (primo :Leto q))))
-
+;(:Epimetheus :Pleione :Epimetheus :Zeus :Atlas :Pleione :Zeus :Pleione :Hera :Zeus :Demeter :Hades :Hera :Hestia :Poseidon :Demeter :Pleione :Hades :Leto :Poseidon :Leto :Hestia :Hera :Atlas :Zeus :Demeter :Hera :Hades :Poseidon :Demeter :Hestia :Hades :Hestia :Poseidon)
 
 
 
