@@ -6,10 +6,17 @@
     (== q [smurf smurf])))
 
 (run* [q]
+  (fresh [smurf]
+    (membero smurf [:papa :brainy :lazy :handy])
+    (distincto [smurf smurf])
+    (== q [smurf smurf])))
+
+(run* [q]
   (fresh [smurf1 smurf2]
     (membero smurf1 [:papa :brainy :lazy :handy])
     (membero smurf2 [:papa :brainy :lazy :handy])
-    (== q [smurf1 smurf2])))
+    (== q [smurf1 smurf2])
+    (distincto q)))
 
 (run* [q]
   (fresh [smurf1 smurf2 smurf3]
@@ -19,6 +26,7 @@
     (distincto [smurf1 smurf2 smurf3])
     (== q [smurf1 smurf2 smurf3])))
 
+
 (run* [q]
   (fresh [smurf1 smurf2 smurf3]
     (== q [smurf1 smurf2 smurf3])
@@ -26,8 +34,8 @@
     (distincto q)))
 
 (run* [q]
-  (== q [(lvar) (lvar) (lvar)])
-  (everyg #(membero % [:papa :brainy :lazy :handy]) q)
+  (== q [(lvar) (lvar)])
+  (everyg #(membero % [:papa :brainy :lazy :handy :handy]) q)
   (distincto q))
 
 (run 1 [q]
@@ -53,7 +61,7 @@
     [(== player1 :paper) (== player2 :rock)]))
 
 (run* [q]
-  (beatso :rock :paper))
+  (beatso :rock :scissors))
 
 (run* [q]
   (beatso :rock q))
