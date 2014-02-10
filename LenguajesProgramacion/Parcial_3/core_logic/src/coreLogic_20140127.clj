@@ -2,35 +2,32 @@
 
 (run* [q]
   (fresh [smurf]
-    (membero smurf [:papa :brainy :lazy :handy])
-    (== q [smurf smurf])))
-
-(run* [q]
-  (fresh [smurf]
-    (membero smurf [:papa :brainy :lazy :handy])
-    (distincto [smurf smurf])
-    (== q [smurf smurf])))
+    (membero smurf [:papa :brainy :lazy :handy]) ;Se considera a smurf como miembro de la lista
+    (== q [smurf smurf])))  ;Unificación de la variable q con una lista que contiene a smurf
+;Profuce cada instancia exitosa de las restricciones, 
+;es decir todas las veces en que smurf es un elemento de la lista
+;([:papa :papa][:brainy :brainy][:lazy :lazy][:handy :handy])
 
 (run* [q]
   (fresh [smurf1 smurf2]
     (membero smurf1 [:papa :brainy :lazy :handy])
-    (membero smurf2 [:papa :brainy :lazy :handy])
-    (== q [smurf1 smurf2])
-    (distincto q)))
+    (membero smurf2 [:papa :brainy :lazy :handy]); Ahora se consideran dos variables distintas asociadas a una lista
+    (== q [smurf1 smurf2])  ;Ahora smurf1 y smurf2 son elementos distintos
+    (distincto q))); Pero solo se desean las instancias en que tienen asociados elementos distintos de la lista
 
 (run* [q]
   (fresh [smurf1 smurf2 smurf3]
     (membero smurf1 [:papa :brainy :lazy :handy])
     (membero smurf2 [:papa :brainy :lazy :handy])
     (membero smurf3 [:papa :brainy :lazy :handy])
-    (distincto [smurf1 smurf2 smurf3])
+    (distincto [smurf1 smurf2 smurf3])  ;De igual forma para tres elementos distintos
     (== q [smurf1 smurf2 smurf3])))
 
 
 (run* [q]
   (fresh [smurf1 smurf2 smurf3]
     (== q [smurf1 smurf2 smurf3])
-    (everyg #(membero % [:papa :brainy :lazy :handy]) q)
+    (everyg #(membero % [:papa :brainy :lazy :handy]) q)  ;Para asociar cada elemento de q (que es una lista) a un elemento de la lista
     (distincto q)))
 
 (run* [q]
@@ -38,10 +35,10 @@
   (everyg #(membero % [:papa :brainy :lazy :handy :handy]) q)
   (distincto q))
 
-(run 1 [q]
+(run 1 [q]  ;Ejemplo para determinar los colores de estados en un mapa geográfico
   (fresh [tn ms al ga fl]
-    (everyg #(membero % [:red :blue :green]) [tn ms al ga fl])
-    (!= ms tn)
+    (everyg #(membero % [:red :blue :green]) [tn ms al ga fl]) ;Cada elemento de la lista (de variables) se le debe asignar un solo color
+    (!= ms tn)  ;Restricciones sobre la lista de estados
     (!= ms al)
     (!= al tn)
     (!= al ga)
