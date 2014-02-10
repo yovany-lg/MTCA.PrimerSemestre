@@ -4,6 +4,37 @@
 (run* [q]
    (membero q [1 2 3])
    (membero q [2 3 4]))
+;(2 3)
+
+(run* [q]
+   (fresh [a]
+     (membero a [1 2 3])
+     (membero q [3 4 5])
+     (== a q)))
+;(3)
+
+(run* [q]
+   (conde
+     [(== q 1)]
+     [(== q 2)]))
+;(1 2)
+
+(run* [q]
+   (conso 1 [2 3] q));q debe ser la lista que consiste en 1 como HEAD (Elemento cabeza) y [1 2 3] como REST (Resto de la lista)
+;((1 2 3))
+
+(run* [q]
+   (conso 1 q [1 2 3])); q debe ser el resto de la lista que consiste de 1 como HEAD y [1 2 3] como lista completa
+;((2 3))
+
+(run* [q]
+   (resto [1 2 3 4] q)) ;Función resto, q es el resto de la lista [1 2 3 4]
+
+;((2 3 4))
+
+(run* [q]
+   (membero q [1 2 3])) ; Restringe la variable q tal que sea un elemento de la lista [1 2 3]
+;(1 2 3)
 
 
 ;The Reasoned Schemer
@@ -17,6 +48,7 @@
 (run* [q] 
     u# ;Objetivo, meta, Proposición lógica que falla
     (== true q))
+;()
 
 (run* [q] 
     s# ;Objetivo, meta, Proposición lógica que es exitoso
@@ -34,17 +66,22 @@
     (let [x true]
         (== true x)))
 ;(_0)   ;Retorna un símbolo de una variable fresca, ya que los goals dentro de let son exitosos
+
 (run* [x]
     (let [x true]
-        (== false x)))
+        (== false x)))  ;Objetivo que falla, por lo tanto devuelve una lista vacía
+;()
 
 (run* [q]   ;También q inicia como variable fresca
-    (fresh [x] ;Una variable es "fresh" (Carne fresca!!!... XD) cuando no tiene asociación alguna
+    (fresh [x] ;Una variable es "fresh" cuando no tiene asociación alguna
         (== true  x)
-        (== true q)))
+        (== true q))); Las asociacion de q es exitosa
+;(true)
 
 (run* [x]
-    s#)
+    s#) ; x se queda como variable fresh.
+;(_0)
+
 
 (run* [x]
     (let [x false]
@@ -105,7 +142,8 @@
 (run* [r]
     (fresh [x y]
         (conde
-            ((== "split" x) (== "pea" y))
-            ((== "navy" x) (== "bean" y))
+            ((== "split" x) (== "pea" y)) ;Las asociaciones son exitosas ya que no hay conflictos
+            ((== "navy" x) (== "bean" y)) ;Conde hace que las asociaciones puedan realizarce suponiendo que la anterior falló
             (s# u#))
         (== (cons x (cons y '())) r)))
+;(("split" "pea") ("navy" "bean"))
